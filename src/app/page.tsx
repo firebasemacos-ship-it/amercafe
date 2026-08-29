@@ -239,16 +239,16 @@ export default function HomePage() {
       </header>
 
       {/* Search Section - Live Instant Search */}
-      <section className="px-6 py-3">
-        <form onSubmit={handleSearchSubmit} className="flex gap-3">
-          <div className="flex-1 glass-input rounded-full px-4 py-3 flex items-center focus-within:ring-2 focus-within:ring-[#187a7d]/30 transition">
-            <Search className="w-5 h-5 text-[#187a7d]" />
+      <section className="px-4 sm:px-6 py-2.5 sm:py-3 w-full">
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 sm:gap-2.5 w-full">
+          <div className="flex-1 min-w-0 glass-input rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center focus-within:ring-2 focus-within:ring-[#187a7d]/30 transition">
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#187a7d] flex-shrink-0" />
             <input
               type="text"
-              placeholder="ابحث عن قهوة، سان سباستيان، برجر، كولد برو..."
+              placeholder="ابحث عن قهوة، حلويات، برجر..."
               value={searchLocal}
               onChange={(e) => setSearchLocal(e.target.value)}
-              className="flex-1 ms-3 bg-transparent outline-none text-xs placeholder:text-gray-400 text-gray-900 font-medium"
+              className="flex-1 min-w-0 ms-2 sm:ms-2.5 bg-transparent outline-none text-xs placeholder:text-gray-400 text-gray-900 font-medium truncate"
             />
 
             {/* Clear search button if typing */}
@@ -256,7 +256,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setSearchLocal("")}
-                className="w-5 h-5 rounded-full bg-gray-200/70 hover:bg-gray-300 text-gray-700 flex items-center justify-center me-2 text-xs"
+                className="w-5 h-5 rounded-full bg-gray-200/70 hover:bg-gray-300 text-gray-700 flex items-center justify-center me-1.5 text-xs flex-shrink-0"
                 title="مسح البحث"
               >
                 <X className="w-3.5 h-3.5" />
@@ -269,30 +269,30 @@ export default function HomePage() {
               onClick={() =>
                 setDeliveryTimeOption((prev) => (prev === "now" ? "later" : "now"))
               }
-              className="flex items-center gap-1 ps-3 border-s border-gray-300/60 hover:opacity-75 transition"
+              className="flex items-center gap-1 ps-2 sm:ps-2.5 border-s border-gray-300/60 hover:opacity-75 transition flex-shrink-0"
             >
-              <Clock className="w-4 h-4 text-[#187a7d]" />
-              <span className="text-[#187a7d] text-xs font-bold">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#187a7d]" />
+              <span className="text-[#187a7d] text-[11px] sm:text-xs font-bold">
                 {deliveryTimeOption === "now" ? "الآن" : "جدول"}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#187a7d]" />
+              <ChevronDown className="w-3 h-3 text-[#187a7d]" />
             </button>
           </div>
 
           <button
             type="button"
             onClick={() => router.push("/search")}
-            className="bg-gradient-to-tr from-[#187a7d] to-[#0e4c4e] text-white p-3 rounded-full flex-shrink-0 shadow-lg shadow-[#187a7d]/30 hover:opacity-95 transition active:scale-95 border border-white/30"
+            className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-tr from-[#187a7d] to-[#0e4c4e] text-white rounded-2xl sm:rounded-full flex items-center justify-center flex-shrink-0 shadow-md shadow-[#187a7d]/30 hover:opacity-95 transition active:scale-95 border border-white/30"
             title="صفحة البحث والتصفية"
           >
-            <SlidersHorizontal className="w-5 h-5 text-[#f7d6b5]" />
+            <SlidersHorizontal className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-[#f7d6b5]" />
           </button>
         </form>
       </section>
 
       {/* Swipable Image Banners Carousel (Linked to Category) */}
       {!searchLocal && bannersList.length > 0 && (
-        <section className="px-6 py-2">
+        <section className="px-4 sm:px-6 py-2">
           <div
             ref={bannerScrollRef}
             onScroll={(e) => {
@@ -363,9 +363,9 @@ export default function HomePage() {
       )}
 
       {/* Categories Horizontal Slider */}
-      <section className="py-4">
-        <div className="px-6 flex items-center justify-between mb-3">
-          <h3 className="font-black text-sm text-[#0f2b2d]">أقسام كافي عامر</h3>
+      <section className="py-3 sm:py-4">
+        <div className="px-4 sm:px-6 flex items-center justify-between mb-3">
+          <h3 className="font-black text-xs sm:text-sm text-[#0f2b2d]">أقسام كافي عامر</h3>
           <button
             onClick={() => router.push("/search")}
             className="text-xs text-[#187a7d] hover:text-[#0b3335] font-bold transition flex items-center gap-0.5"
@@ -375,7 +375,7 @@ export default function HomePage() {
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto px-6 scrollbar-hide py-1">
+        <div className="flex gap-2 sm:gap-2.5 overflow-x-auto px-4 sm:px-6 scrollbar-hide py-1">
           {/* "All" Category Pill */}
           <button
             onClick={() => setActiveCategory("all")}
