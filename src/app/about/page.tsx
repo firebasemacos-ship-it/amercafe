@@ -172,7 +172,7 @@ export default function AboutPage() {
           </div>
 
           <a
-            href="https://maps.google.com/?q=طبرق+مفترق+رابعة"
+            href="https://maps.app.goo.gl/cjMCijpL2f2PR1xZ8"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full glass-pill text-[#187a7d] py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition hover:bg-white"
