@@ -47,18 +47,18 @@ export default function OrdersPage() {
   return (
     <div className="flex-1 bg-transparent overflow-y-auto pb-32 h-full scrollbar-hide">
       {/* Header */}
-      <header className="px-6 pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
         <Link
           href="/"
-          className="w-10 h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
+          className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
         >
           <ChevronRight className="w-5 h-5" />
         </Link>
-        <h1 className="text-base font-black text-[#0f2b2d]">طلبات كافي عامر</h1>
-        <div className="w-10"></div>
+        <h1 className="text-sm sm:text-base font-black text-[#0f2b2d]">طلبات كافي عامر</h1>
+        <div className="w-9 sm:w-10"></div>
       </header>
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         {orders.length === 0 ? (
           <div className="text-center py-20 glass-card rounded-3xl p-6">
             <div className="w-20 h-20 glass-card rounded-full flex items-center justify-center mx-auto mb-3 text-[#187a7d]">

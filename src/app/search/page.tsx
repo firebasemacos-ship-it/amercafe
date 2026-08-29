@@ -10,6 +10,7 @@ import {
   Heart,
   Plus,
   Flame,
+  Sparkles,
 } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -73,16 +74,16 @@ function SearchContent() {
   return (
     <div className="flex-1 bg-transparent overflow-y-auto pb-32 h-full scrollbar-hide flex flex-col">
       {/* Sticky Header with Glass Search Input */}
-      <header className="px-6 pt-10 pb-3 sticky top-0 glass-header z-30">
-        <div className="flex items-center gap-3">
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 sticky top-0 glass-header z-30">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
             href="/"
-            className="w-10 h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
+            className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition flex-shrink-0"
           >
             <ChevronRight className="w-5 h-5" />
           </Link>
 
-          <div className="flex-1 glass-input rounded-full px-4 py-2.5 flex items-center focus-within:ring-2 focus-within:ring-[#187a7d]/30 transition">
+          <div className="flex-1 glass-input rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center focus-within:ring-2 focus-within:ring-[#187a7d]/30 transition">
             <Search className="w-4 h-4 text-[#187a7d]" />
             <input
               type="text"
@@ -106,7 +107,7 @@ function SearchContent() {
 
       {/* Suggested Real Items Fast Tags */}
       {dynamicSuggestions.length > 0 && (
-        <section className="px-6 py-2">
+        <section className="px-4 sm:px-6 py-2">
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
             <span className="text-[11px] text-[#187a7d] font-black flex-shrink-0 flex items-center gap-1">
               <Flame className="w-3.5 h-3.5 fill-current" />
@@ -116,7 +117,7 @@ function SearchContent() {
               <button
                 key={idx}
                 onClick={() => setQuery(itemTitle)}
-                className={`glass-pill px-3 py-1 rounded-xl text-[11px] font-bold flex-shrink-0 transition active:scale-95 ${
+                className={`glass-pill px-2.5 sm:px-3 py-1 rounded-xl text-[10.5px] sm:text-[11px] font-bold flex-shrink-0 transition active:scale-95 ${
                   query.trim() === itemTitle
                     ? "glass-pill-active"
                     : "text-gray-700 hover:text-[#187a7d]"
@@ -130,29 +131,30 @@ function SearchContent() {
       )}
 
       {/* Category Pills Filter */}
-      <section className="px-6 py-1">
+      <section className="px-4 sm:px-6 py-1">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1">
           <button
             onClick={() => setSelectedCat("all")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex-shrink-0 ${
+            className={`px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition flex-shrink-0 flex items-center gap-1 ${
               selectedCat === "all"
                 ? "glass-pill-active"
                 : "glass-pill text-gray-700"
             }`}
           >
-            كل الأقسام ✨
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>كل الأقسام</span>
           </button>
           {catsList.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCat(cat.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex-shrink-0 flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition flex-shrink-0 flex items-center gap-1.5 ${
                 selectedCat === cat.id
                   ? "glass-pill-active"
                   : "glass-pill text-gray-700"
               }`}
             >
-              <CategoryIcon icon={cat.icon} name={cat.name} className="w-4 h-4" textClassName="text-xs" />
+              <CategoryIcon icon={cat.icon} name={cat.name} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>{cat.name}</span>
             </button>
           ))}
@@ -160,29 +162,29 @@ function SearchContent() {
       </section>
 
       {/* Search Results Count */}
-      <section className="px-6 py-2 flex items-center justify-between text-xs text-gray-500 font-medium">
+      <section className="px-4 sm:px-6 py-2 flex items-center justify-between text-xs text-gray-500 font-medium">
         <span>نتائج البحث ({filteredFoods.length} خيار)</span>
       </section>
 
       {/* 2-Columns Side-by-Side Results Grid */}
-      <section className="px-6 py-2 flex-1">
+      <section className="px-4 sm:px-6 py-2 flex-1">
         {filteredFoods.length === 0 ? (
           <div className="text-center py-16 glass-card rounded-3xl p-6">
-            <span className="text-5xl block mb-3">🔍</span>
-            <h3 className="font-bold text-gray-800 text-base mb-1">لم يتم العثور على أطباق</h3>
+            <Search className="w-10 h-10 mx-auto mb-2 text-[#187a7d]/40" />
+            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-1">لم يتم العثور على أطباق</h3>
             <p className="text-gray-500 text-xs">جرب البحث بكلمات أخرى أو تصفح القائمة</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
             {filteredFoods.map((item) => {
               const isFav = isFavorite(item.id);
               return (
                 <div
                   key={item.id}
                   onClick={() => setSelectedFoodModal(item)}
-                  className="glass-card rounded-[28px] p-2.5 flex flex-col group cursor-pointer active:scale-[0.98]"
+                  className="glass-card rounded-[24px] sm:rounded-[28px] p-2 sm:p-2.5 flex flex-col group cursor-pointer active:scale-[0.98]"
                 >
-                  <div className="w-full aspect-square rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
+                  <div className="w-full aspect-square rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
                     <Image
                       src={item.image}
                       alt={item.name}
@@ -204,12 +206,12 @@ function SearchContent() {
                         }`}
                       />
                     </button>
-                    <div className="absolute bottom-2 end-2 glass-badge-dark text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs">
+                    <div className="absolute bottom-2 end-2 glass-badge-dark text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 rounded-full font-bold shadow-xs">
                       {Number(item.price).toFixed(2)} د.ل
                     </div>
                   </div>
 
-                  <h4 className="font-bold text-[#0f2b2d] text-xs truncate mb-0.5">
+                  <h4 className="font-bold text-[#0f2b2d] text-[11.5px] sm:text-xs truncate mb-0.5">
                     {item.name}
                   </h4>
                   <div className="flex items-center justify-between text-[10px] text-gray-500 mb-2">

@@ -143,32 +143,31 @@ export default function HomePage() {
 
   return (
     <div className="flex-1 overflow-y-auto pb-32 bg-transparent scrollbar-hide">
-      {/* Header with Amer Cafe Logo and Location */}
-      <header className="px-6 pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
-        <div className="flex items-center gap-3">
-          {/* Amer Cafe Logo with Secret Triple Click */}
+      {/* Main App Top Header */}
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30 transition-all">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Amer Cafe Logo with triple-click secret admin trigger */}
           <div
             onClick={handleLogoClick}
-            className="w-12 h-12 rounded-2xl overflow-hidden shadow-md border-2 border-white/60 flex-shrink-0 cursor-pointer bg-[#187a7d] p-0.5 active:scale-95 transition select-none"
-            title="انقر 3 مرات للوحة تحكم المدير"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl overflow-hidden relative glass-card p-1 cursor-pointer select-none active:scale-95 transition flex-shrink-0"
+            title="كافي عامر"
           >
             <Image
               src="/images/logo.png"
-              alt="شعار كافي عامر"
-              width={48}
-              height={48}
+              alt="كافي عامر - Amer Cafe"
+              fill
               unoptimized
-              className="object-contain w-full h-full rounded-xl pointer-events-none"
+              className="object-contain p-0.5"
             />
           </div>
 
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="text-base font-black text-[#0f2b2d] tracking-tight">
+              <h2 className="text-sm sm:text-base font-black text-[#0f2b2d] tracking-tight">
                 كافي عامر
-              </h1>
-              <span className="text-[10px] bg-[#f7d6b5] text-[#187a7d] font-bold px-1.5 py-0.5 rounded-md shadow-xs border border-white/40">
-                Amer Cafe
+              </h2>
+              <span className="text-[9px] sm:text-[10px] bg-[#f7d6b5] text-[#187a7d] font-bold px-1.5 py-0.5 rounded-md shadow-xs border border-white/40">
+                Since 2012
               </span>
             </div>
             <div
@@ -176,7 +175,7 @@ export default function HomePage() {
               className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition mt-0.5"
             >
               <MapPin className="w-3.5 h-3.5 text-[#187a7d]" />
-              <span className="text-xs text-gray-600 font-bold truncate max-w-[140px]">
+              <span className="text-[11px] sm:text-xs text-gray-600 font-bold truncate max-w-[130px] sm:max-w-[160px]">
                 طبرق ، مفترق رابعة
               </span>
               <ChevronDown className="w-3 h-3 text-[#187a7d]" />
@@ -184,24 +183,24 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 relative">
+        <div className="flex items-center gap-2 sm:gap-2.5 relative">
           {/* Notification Button */}
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2.5 rounded-2xl glass-card text-[#187a7d] hover:text-[#0b3335] active:scale-95 transition"
+            className="relative p-2 sm:p-2.5 rounded-2xl glass-card text-[#187a7d] hover:text-[#0b3335] active:scale-95 transition"
             title="الإشعارات"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             {notificationsList.length > 0 && (
-              <span className="absolute top-2 end-2 w-2 h-2 bg-[#f7d6b5] border-2 border-[#187a7d] rounded-full animate-pulse"></span>
+              <span className="absolute top-1.5 end-1.5 sm:top-2 sm:end-2 w-2 h-2 bg-[#f7d6b5] border-2 border-[#187a7d] rounded-full animate-pulse"></span>
             )}
           </button>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute top-14 end-0 w-72 glass-modal rounded-3xl p-4 z-50 text-right animate-in fade-in zoom-in-95 shadow-2xl">
+            <div className="absolute top-13 sm:top-14 end-0 w-64 sm:w-72 glass-modal rounded-3xl p-4 z-50 text-right animate-in fade-in zoom-in-95 shadow-2xl">
               <div className="flex items-center justify-between pb-2 border-b border-gray-100/60 mb-2">
-                <span className="font-bold text-sm text-[#0f2b2d]">إشعارات كافي عامر</span>
+                <span className="font-bold text-xs sm:text-sm text-[#0f2b2d]">إشعارات كافي عامر</span>
                 {notificationsList.length > 0 && (
                   <span className="text-[10px] bg-[#e4f2f2] text-[#187a7d] px-2 py-0.5 rounded-full font-bold">
                     {notificationsList.length} جديد
@@ -231,10 +230,10 @@ export default function HomePage() {
           {/* About / Info Button */}
           <button
             onClick={() => router.push("/about")}
-            className="w-10 h-10 rounded-2xl glass-card text-[#187a7d] hover:text-[#0b3335] flex items-center justify-center cursor-pointer active:scale-95 transition"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl glass-card text-[#187a7d] hover:text-[#0b3335] flex items-center justify-center cursor-pointer active:scale-95 transition"
             title="معلومات كافي عامر"
           >
-            <Store className="w-5 h-5" />
+            <Store className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
         </div>
       </header>
@@ -440,7 +439,7 @@ export default function HomePage() {
 
         {filteredFoods.length === 0 ? (
           <div className="glass-card rounded-3xl p-8 text-center my-4 shadow-sm">
-            <span className="text-4xl block mb-2">🔍</span>
+            <Search className="w-10 h-10 mx-auto mb-2 text-[#187a7d]/40" />
             <h4 className="font-bold text-sm text-gray-800">لا توجد نتائج مطابقة</h4>
             <p className="text-xs text-gray-400 mt-1">
               جرب البحث بكلمات أخرى أو اختر قسماً آخر من القائمة
@@ -453,17 +452,17 @@ export default function HomePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
             {filteredFoods.map((food: FoodItem) => {
               const isFav = isFavorite(food.id);
               return (
                 <div
                   key={food.id}
                   onClick={() => setSelectedFoodModal(food)}
-                  className="glass-card rounded-[28px] p-2.5 flex flex-col group cursor-pointer active:scale-[0.98]"
+                  className="glass-card rounded-[24px] sm:rounded-[28px] p-2 sm:p-2.5 flex flex-col group cursor-pointer active:scale-[0.98]"
                 >
                   {/* Square Image 1:1 */}
-                  <div className="w-full aspect-square rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
+                  <div className="w-full aspect-square rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
                     <Image
                       src={food.image}
                       alt={food.name}

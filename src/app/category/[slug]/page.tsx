@@ -79,26 +79,26 @@ export default function CategoryPage({
   return (
     <div className="flex-1 bg-transparent overflow-y-auto pb-32 h-full scrollbar-hide flex flex-col">
       {/* Sticky Header */}
-      <header className="px-6 pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
         <Link
           href="/"
-          className="w-10 h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
+          className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
           title="رجوع للرئيسية"
         >
           <ChevronRight className="w-5 h-5" />
         </Link>
-        <h1 className="text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
-          <CategoryIcon icon={currentCategory.icon} name={currentCategory.name} className="w-5 h-5" textClassName="text-base" />
+        <h1 className="text-sm sm:text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
+          <CategoryIcon icon={currentCategory.icon} name={currentCategory.name} className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>{currentCategory.name}</span>
-          <span className="text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-bold shadow-xs border border-white/40">
+          <span className="text-[9px] sm:text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-bold shadow-xs border border-white/40">
             كافي عامر
           </span>
         </h1>
-        <div className="w-10"></div>
+        <div className="w-9 sm:w-10"></div>
       </header>
 
       {/* Category Switcher Horizontal Bar */}
-      <section className="px-6 py-2">
+      <section className="px-4 sm:px-6 py-2">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1">
           {catsList.map((cat) => {
             const isCurrent = cat.id === slug;
@@ -106,13 +106,13 @@ export default function CategoryPage({
               <button
                 key={cat.id}
                 onClick={() => router.push(`/category/${cat.id}`)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition flex-shrink-0 active:scale-95 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl text-[11px] sm:text-xs font-bold transition flex-shrink-0 active:scale-95 ${
                   isCurrent
                     ? "glass-pill-active"
                     : "glass-pill text-gray-700"
                 }`}
               >
-                <CategoryIcon icon={cat.icon} name={cat.name} className="w-4 h-4" textClassName="text-xs" />
+                <CategoryIcon icon={cat.icon} name={cat.name} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{cat.name}</span>
               </button>
             );
@@ -121,8 +121,8 @@ export default function CategoryPage({
       </section>
 
       {/* Live Search inside Category */}
-      <section className="px-6 py-2">
-        <div className="glass-input rounded-2xl px-3.5 py-2.5 flex items-center">
+      <section className="px-4 sm:px-6 py-1.5 sm:py-2">
+        <div className="glass-input rounded-2xl px-3.5 py-2 sm:py-2.5 flex items-center">
           <Search className="w-4 h-4 text-[#187a7d]" />
           <input
             type="text"
@@ -135,11 +135,11 @@ export default function CategoryPage({
       </section>
 
       {/* Sorting Chips */}
-      <section className="px-6 py-1">
-        <div className="flex items-center gap-2 text-xs">
+      <section className="px-4 sm:px-6 py-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs">
           <button
             onClick={() => setFilterSort("all")}
-            className={`px-3 py-1 rounded-xl transition font-bold text-[11px] ${
+            className={`px-2.5 sm:px-3 py-1 rounded-xl transition font-bold text-[10px] sm:text-[11px] ${
               filterSort === "all"
                 ? "bg-[#187a7d] text-white shadow-xs"
                 : "glass-pill text-gray-600"
@@ -149,7 +149,7 @@ export default function CategoryPage({
           </button>
           <button
             onClick={() => setFilterSort("top")}
-            className={`px-3 py-1 rounded-xl transition font-bold text-[11px] ${
+            className={`px-2.5 sm:px-3 py-1 rounded-xl transition font-bold text-[10px] sm:text-[11px] ${
               filterSort === "top"
                 ? "bg-[#187a7d] text-white shadow-xs"
                 : "glass-pill text-gray-600"
@@ -159,7 +159,7 @@ export default function CategoryPage({
           </button>
           <button
             onClick={() => setFilterSort("price")}
-            className={`px-3 py-1 rounded-xl transition font-bold text-[11px] ${
+            className={`px-2.5 sm:px-3 py-1 rounded-xl transition font-bold text-[10px] sm:text-[11px] ${
               filterSort === "price"
                 ? "bg-[#187a7d] text-white shadow-xs"
                 : "glass-pill text-gray-600"
@@ -171,7 +171,7 @@ export default function CategoryPage({
       </section>
 
       {/* 2-Columns Side-by-Side Cards */}
-      <section className="py-3 px-6 flex-1">
+      <section className="py-3 px-4 sm:px-6 flex-1">
         {categoryItems.length === 0 ? (
           <div className="text-center py-16 glass-card rounded-3xl p-6">
             <Coffee className="w-10 h-10 mx-auto mb-2 text-[#187a7d]/50" />
@@ -179,17 +179,17 @@ export default function CategoryPage({
             <p className="text-gray-400 text-xs mt-1">جرب كلمات أخرى أو أفرغ شريط البحث</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
             {categoryItems.map((item) => {
               const isFav = isFavorite(item.id);
               return (
                 <div
                   key={item.id}
                   onClick={() => setSelectedFoodModal(item)}
-                  className="glass-card rounded-[28px] p-2.5 flex flex-col group cursor-pointer active:scale-[0.98]"
+                  className="glass-card rounded-[24px] sm:rounded-[28px] p-2 sm:p-2.5 flex flex-col group cursor-pointer active:scale-[0.98]"
                 >
                   {/* Square Image 1:1 */}
-                  <div className="w-full aspect-square rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
+                  <div className="w-full aspect-square rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
                     <Image
                       src={item.image}
                       alt={item.name}
@@ -218,13 +218,13 @@ export default function CategoryPage({
                     </button>
 
                     {/* Price Tag with Amer Cafe glass badge */}
-                    <div className="absolute bottom-2 end-2 glass-badge-dark text-[11px] px-2.5 py-0.5 rounded-full font-black shadow-sm">
+                    <div className="absolute bottom-2 end-2 glass-badge-dark text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 rounded-full font-black shadow-sm">
                       {Number(item.price).toFixed(2)} د.ل
                     </div>
                   </div>
 
                   {/* Title & Info */}
-                  <h4 className="font-bold text-[#0f2b2d] text-xs truncate mb-0.5">
+                  <h4 className="font-bold text-[#0f2b2d] text-[11.5px] sm:text-xs truncate mb-0.5">
                     {item.name}
                   </h4>
 

@@ -121,16 +121,16 @@ ${itemsListText}
   return (
     <div className="flex-1 bg-transparent overflow-y-auto pb-32 h-full scrollbar-hide">
       {/* Header */}
-      <header className="px-6 pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
         <Link
           href="/"
-          className="w-10 h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
+          className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
         >
           <ChevronRight className="w-5 h-5" />
         </Link>
-        <h1 className="text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
+        <h1 className="text-sm sm:text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
           <span>سلة كافي عامر</span>
-          <span className="text-xs bg-[#e4f2f2] text-[#187a7d] px-2.5 py-0.5 rounded-full font-black border border-[#187a7d]/20">
+          <span className="text-[11px] sm:text-xs bg-[#e4f2f2] text-[#187a7d] px-2.5 py-0.5 rounded-full font-black border border-[#187a7d]/20">
             {cart.length}
           </span>
         </h1>
@@ -142,17 +142,17 @@ ${itemsListText}
             تفريغ السلة
           </button>
         ) : (
-          <div className="w-10"></div>
+          <div className="w-9 sm:w-10"></div>
         )}
       </header>
 
       {cart.length === 0 ? (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-          <div className="w-24 h-24 glass-card rounded-full flex items-center justify-center mb-4 text-[#187a7d]">
-            <Coffee className="w-10 h-10" />
+        <div className="flex flex-col items-center justify-center py-20 px-4 sm:px-6 text-center">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 glass-card rounded-full flex items-center justify-center mb-4 text-[#187a7d]">
+            <Coffee className="w-8 h-8 sm:w-10 sm:h-10" />
           </div>
-          <h2 className="text-xl font-black text-[#0f2b2d] mb-2">سلتك فارغة في كافي عامر</h2>
+          <h2 className="text-lg sm:text-xl font-black text-[#0f2b2d] mb-2">سلتك فارغة في كافي عامر</h2>
           <p className="text-gray-500 text-xs max-w-xs mb-6 leading-relaxed">
             لم تقم بإضافة أي طلب إلى سلتك بعد. استكشف قائمة القهوة المختصة والحلويات الفاخرة!
           </p>
@@ -164,7 +164,7 @@ ${itemsListText}
           </Link>
         </div>
       ) : (
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           {/* Cart Items List */}
           <div className="space-y-3">
             {cart.map(({ item, quantity }) => (

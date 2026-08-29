@@ -79,30 +79,30 @@ export default function AboutPage() {
   return (
     <div className="flex-1 bg-transparent overflow-y-auto pb-32 h-full scrollbar-hide">
       {/* Sticky Header */}
-      <header className="px-6 pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
         <Link
           href="/"
-          className="w-10 h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
+          className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
           title="رجوع للرئيسية"
         >
           <ChevronRight className="w-5 h-5" />
         </Link>
-        <h1 className="text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
+        <h1 className="text-sm sm:text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
           <span>معلومات كافي عامر</span>
-          <span className="text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-bold shadow-xs border border-white/40">
+          <span className="text-[9px] sm:text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-bold shadow-xs border border-white/40">
             Since 2012
           </span>
         </h1>
         <button
           onClick={handleShare}
-          className="w-10 h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
+          className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
           title="مشاركة"
         >
           <Share2 className="w-4 h-4" />
         </button>
       </header>
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         {/* Official QR & Identity Card */}
         <div className="glass-card rounded-[32px] p-5 text-center relative overflow-hidden group">
           <div className="w-full h-64 relative rounded-2xl overflow-hidden mb-3 bg-white/50 backdrop-blur-sm border border-white/60">
