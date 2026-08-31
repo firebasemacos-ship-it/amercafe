@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
       categoryName: catObj ? catObj.name : "عام",
       price: parseFloat(foodForm.price),
       calories: parseInt(foodForm.calories) || 200,
-      image: foodForm.image || "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800&auto=format&fit=crop&q=80",
+      image: foodForm.image.trim() || "/images/logo.png",
       ingredients: foodForm.ingredients
         .split(",")
         .map((s) => s.trim())
@@ -1130,9 +1130,18 @@ export default function AdminDashboardPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="py-2">
-                      <UploadCloud className="w-10 h-10 text-[#187a7d] mx-auto mb-1 opacity-70" />
-                      <p className="text-[11px] text-gray-500 font-medium">اضغط بالأسفل لرفع صورة مباشرة من جهازك إلى ImgBB</p>
+                    <div className="py-2 flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-xl bg-white/70 border border-gray-200 p-1 relative mb-1.5 shadow-xs">
+                        <Image
+                          src="/images/logo.png"
+                          alt="شعار كافي عامر التلقائي"
+                          fill
+                          unoptimized
+                          className="object-contain p-1"
+                        />
+                      </div>
+                      <p className="text-[11px] text-[#187a7d] font-bold">سيتم اعتماد شعار كافي عامر كصورة للمنتج تلقائياً</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">أو اضغط بالأسفل لرفع صورة خاصة بالصنف</p>
                     </div>
                   )}
 

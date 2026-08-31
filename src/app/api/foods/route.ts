@@ -91,7 +91,7 @@ export async function POST(request: Request) {
         deliveryTime,
         Number(calories),
         description,
-        image || "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800&auto=format&fit=crop&q=80",
+        image && String(image).trim() !== "" ? String(image).trim() : "/images/logo.png",
         Boolean(isPopular),
         JSON.stringify(ingredients),
       ]
@@ -147,7 +147,7 @@ export async function PUT(request: Request) {
         price !== undefined ? Number(price) : null,
         calories !== undefined ? Number(calories) : null,
         description,
-        image,
+        image !== undefined ? (image && String(image).trim() !== "" ? String(image).trim() : "/images/logo.png") : null,
         isPopular !== undefined ? Boolean(isPopular) : null,
         ingredients ? JSON.stringify(ingredients) : null,
       ]
