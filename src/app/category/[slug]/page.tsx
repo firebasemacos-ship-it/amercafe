@@ -27,11 +27,16 @@ export default function CategoryPage({
   const slug = resolvedParams.slug;
 
   const { addToCart, isFavorite, toggleFavorite, setSelectedFoodModal } = useApp();
+  const [currentSlug, setCurrentSlug] = useState(slug);
   const [filterSort, setFilterSort] = useState<"all" | "top" | "price">("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   const [foodsList, setFoodsList] = useState<FoodItem[]>(FOOD_ITEMS);
   const [catsList, setCatsList] = useState<Category[]>(CATEGORIES);
+
+  useEffect(() => {
+    setCurrentSlug(slug);
+  }, [slug]);
 
   useEffect(() => {
     async function loadData() {
@@ -51,15 +56,26 @@ export default function CategoryPage({
     loadData();
   }, []);
 
-  const currentCategory = catsList.find((c) => c.id === slug) || catsList[0] || {
-    id: slug,
+  const handleCategorySwitch = (newSlug: string, e?: React.MouseEvent<HTMLElement>) => {
+    setCurrentSlug(newSlug);
+    setSearchTerm("");
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `/category/${newSlug}`);
+    }
+    if (e?.currentTarget) {
+      e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  };
+
+  const currentCategory = catsList.find((c) => c.id === currentSlug) || catsList[0] || {
+    id: currentSlug,
     name: "القسم",
-    icon: "☕",
+    icon: "coffee",
     itemCount: 0,
   };
 
   // Get items for this category
-  let categoryItems = foodsList.filter((item) => item.category === slug);
+  let categoryItems = foodsList.filter((item) => item.category === currentSlug);
 
   if (searchTerm.trim()) {
     categoryItems = categoryItems.filter(
@@ -79,7 +95,7 @@ export default function CategoryPage({
   return (
     <div className="flex-1 bg-transparent overflow-y-auto pb-32 h-full scrollbar-hide flex flex-col">
       {/* Sticky Header */}
-      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30">
+      <header className="px-4 sm:px-6 pt-7 sm:pt-10 pb-3 flex items-center justify-between sticky top-0 glass-header z-30 transition-all">
         <Link
           href="/"
           className="w-9 h-9 sm:w-10 sm:h-10 glass-card rounded-2xl flex items-center justify-center text-[#187a7d] active:scale-95 transition"
@@ -87,7 +103,7 @@ export default function CategoryPage({
         >
           <ChevronRight className="w-5 h-5" />
         </Link>
-        <h1 className="text-sm sm:text-base font-black text-[#0f2b2d] flex items-center gap-1.5">
+        <h1 className="text-sm sm:text-base font-black text-[#0f2b2d] flex items-center gap-1.5 transition-all">
           <CategoryIcon icon={currentCategory.icon} name={currentCategory.name} className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>{currentCategory.name}</span>
           <span className="text-[9px] sm:text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-bold shadow-xs border border-white/40">
@@ -99,17 +115,17 @@ export default function CategoryPage({
 
       {/* Category Switcher Horizontal Bar */}
       <section className="px-4 sm:px-6 py-2">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1 scroll-smooth">
           {catsList.map((cat) => {
-            const isCurrent = cat.id === slug;
+            const isCurrent = cat.id === currentSlug;
             return (
               <button
                 key={cat.id}
-                onClick={() => router.push(`/category/${cat.id}`)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl text-[11px] sm:text-xs font-bold transition flex-shrink-0 active:scale-95 ${
+                onClick={(e) => handleCategorySwitch(cat.id, e)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[11px] sm:text-xs font-bold transition-all duration-300 flex-shrink-0 active:scale-95 cursor-pointer ${
                   isCurrent
-                    ? "glass-pill-active"
-                    : "glass-pill text-gray-700"
+                    ? "glass-pill-active scale-[1.03] shadow-md ring-1 ring-[#f7d6b5]/40"
+                    : "glass-pill text-gray-700 hover:text-[#187a7d]"
                 }`}
               >
                 <CategoryIcon icon={cat.icon} name={cat.name} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -122,7 +138,7 @@ export default function CategoryPage({
 
       {/* Live Search inside Category */}
       <section className="px-4 sm:px-6 py-1.5 sm:py-2">
-        <div className="glass-input rounded-2xl px-3.5 py-2 sm:py-2.5 flex items-center">
+        <div className="glass-input rounded-2xl px-3.5 py-2 sm:py-2.5 flex items-center focus-within:ring-2 focus-within:ring-[#187a7d]/30 transition">
           <Search className="w-4 h-4 text-[#187a7d]" />
           <input
             type="text"
@@ -131,6 +147,14 @@ export default function CategoryPage({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 ms-2.5 bg-transparent outline-none text-xs text-gray-900 placeholder:text-gray-400 font-medium"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-[10px]"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </section>
 
@@ -139,30 +163,30 @@ export default function CategoryPage({
         <div className="flex items-center gap-1.5 sm:gap-2 text-xs">
           <button
             onClick={() => setFilterSort("all")}
-            className={`px-2.5 sm:px-3 py-1 rounded-xl transition font-bold text-[10px] sm:text-[11px] ${
+            className={`px-2.5 sm:px-3 py-1 rounded-xl transition-all font-bold text-[10px] sm:text-[11px] cursor-pointer active:scale-95 ${
               filterSort === "all"
                 ? "bg-[#187a7d] text-white shadow-xs"
-                : "glass-pill text-gray-600"
+                : "glass-pill text-gray-600 hover:text-[#187a7d]"
             }`}
           >
             الكل
           </button>
           <button
             onClick={() => setFilterSort("top")}
-            className={`px-2.5 sm:px-3 py-1 rounded-xl transition font-bold text-[10px] sm:text-[11px] ${
+            className={`px-2.5 sm:px-3 py-1 rounded-xl transition-all font-bold text-[10px] sm:text-[11px] cursor-pointer active:scale-95 ${
               filterSort === "top"
                 ? "bg-[#187a7d] text-white shadow-xs"
-                : "glass-pill text-gray-600"
+                : "glass-pill text-gray-600 hover:text-[#187a7d]"
             }`}
           >
             الأعلى تقييماً ⭐
           </button>
           <button
             onClick={() => setFilterSort("price")}
-            className={`px-2.5 sm:px-3 py-1 rounded-xl transition font-bold text-[10px] sm:text-[11px] ${
+            className={`px-2.5 sm:px-3 py-1 rounded-xl transition-all font-bold text-[10px] sm:text-[11px] cursor-pointer active:scale-95 ${
               filterSort === "price"
                 ? "bg-[#187a7d] text-white shadow-xs"
-                : "glass-pill text-gray-600"
+                : "glass-pill text-gray-600 hover:text-[#187a7d]"
             }`}
           >
             الأقل سعراً 💵
@@ -173,13 +197,16 @@ export default function CategoryPage({
       {/* 2-Columns Side-by-Side Cards */}
       <section className="py-3 px-4 sm:px-6 flex-1">
         {categoryItems.length === 0 ? (
-          <div className="text-center py-16 glass-card rounded-3xl p-6">
+          <div className="text-center py-16 glass-card rounded-3xl p-6 animate-in fade-in duration-300">
             <Coffee className="w-10 h-10 mx-auto mb-2 text-[#187a7d]/50" />
             <p className="text-gray-600 text-sm font-bold">لا توجد أطباق مطابقة للبحث</p>
             <p className="text-gray-400 text-xs mt-1">جرب كلمات أخرى أو أفرغ شريط البحث</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+          <div
+            key={currentSlug + "-" + filterSort + "-" + searchTerm}
+            className="grid grid-cols-2 gap-2.5 sm:gap-3.5 animate-in fade-in zoom-in-[0.98] duration-300"
+          >
             {categoryItems.map((item) => {
               const isFav = isFavorite(item.id);
               return (
@@ -191,7 +218,7 @@ export default function CategoryPage({
                   {/* Square Image 1:1 */}
                   <div className="w-full aspect-square rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-gray-100 mb-2 border border-white/60">
                     <Image
-                      src={item.image}
+                      src={item.image || "/images/logo.png"}
                       alt={item.name}
                       fill
                       unoptimized

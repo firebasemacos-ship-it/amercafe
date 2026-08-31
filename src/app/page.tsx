@@ -107,13 +107,10 @@ export default function HomePage() {
     }
   };
 
-  const handleCategorySelect = (categoryId: string) => {
-    if (activeCategory === categoryId) {
-      router.push(`/category/${categoryId}`);
-    } else {
-      setActiveCategory(categoryId);
-      const catObj = catsList.find((c) => c.id === categoryId);
-      showToast(`عرض قائمة: ${catObj?.name || "الكل"}`);
+  const handleCategorySelect = (categoryId: string, e?: React.MouseEvent<HTMLElement>) => {
+    setActiveCategory(categoryId);
+    if (e?.currentTarget) {
+      e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }
   };
 
@@ -375,14 +372,17 @@ export default function HomePage() {
           </button>
         </div>
 
-        <div className="flex gap-2 sm:gap-2.5 overflow-x-auto px-4 sm:px-6 scrollbar-hide py-1">
+        <div className="flex gap-2 sm:gap-2.5 overflow-x-auto px-4 sm:px-6 scrollbar-hide py-1 scroll-smooth">
           {/* "All" Category Pill */}
           <button
-            onClick={() => setActiveCategory("all")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl flex-shrink-0 transition-all active:scale-95 ${
+            onClick={(e) => {
+              setActiveCategory("all");
+              e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+            }}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl flex-shrink-0 transition-all duration-300 active:scale-95 cursor-pointer ${
               activeCategory === "all"
-                ? "glass-pill-active"
-                : "glass-pill text-gray-700"
+                ? "glass-pill-active scale-[1.02] shadow-md"
+                : "glass-pill text-gray-700 hover:text-[#187a7d]"
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -395,11 +395,11 @@ export default function HomePage() {
             return (
               <button
                 key={cat.id}
-                onClick={() => handleCategorySelect(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl flex-shrink-0 transition-all active:scale-95 ${
+                onClick={(e) => handleCategorySelect(cat.id, e)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl flex-shrink-0 transition-all duration-300 active:scale-95 cursor-pointer ${
                   isSelected
-                    ? "glass-pill-active"
-                    : "glass-pill text-gray-700"
+                    ? "glass-pill-active scale-[1.02] shadow-md"
+                    : "glass-pill text-gray-700 hover:text-[#187a7d]"
                 }`}
               >
                 <CategoryIcon icon={cat.icon} name={cat.name} className="w-5 h-5" textClassName="text-lg" />
@@ -415,11 +415,11 @@ export default function HomePage() {
       </section>
 
       {/* Menu Cards Grid - 2 COLUMNS SIDE-BY-SIDE */}
-      <section className="px-6 py-2">
+      <section id="menu-products-section" className="px-4 sm:px-6 py-2">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-1.5">
             <Flame className="w-4 h-4 text-[#187a7d] fill-[#187a7d]" />
-            <h3 className="font-black text-sm text-[#0f2b2d]">
+            <h3 className="font-black text-xs sm:text-sm text-[#0f2b2d] transition-all">
               {searchLocal
                 ? `نتائج البحث عن "${searchLocal}" (${filteredFoods.length})`
                 : activeCategory === "all"
@@ -438,7 +438,7 @@ export default function HomePage() {
         </div>
 
         {filteredFoods.length === 0 ? (
-          <div className="glass-card rounded-3xl p-8 text-center my-4 shadow-sm">
+          <div className="glass-card rounded-3xl p-8 text-center my-4 shadow-sm animate-in fade-in duration-300">
             <Search className="w-10 h-10 mx-auto mb-2 text-[#187a7d]/40" />
             <h4 className="font-bold text-sm text-gray-800">لا توجد نتائج مطابقة</h4>
             <p className="text-xs text-gray-400 mt-1">
@@ -446,13 +446,16 @@ export default function HomePage() {
             </p>
             <button
               onClick={() => setSearchLocal("")}
-              className="mt-4 bg-[#187a7d] text-white text-xs font-bold px-5 py-2 rounded-xl"
+              className="mt-4 bg-[#187a7d] text-white text-xs font-bold px-5 py-2 rounded-xl active:scale-95 transition"
             >
               عرض كل القائمة
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+          <div
+            key={activeCategory + "-" + searchLocal}
+            className="grid grid-cols-2 gap-2.5 sm:gap-3.5 animate-in fade-in zoom-in-[0.98] duration-300"
+          >
             {filteredFoods.map((food: FoodItem) => {
               const isFav = isFavorite(food.id);
               return (
