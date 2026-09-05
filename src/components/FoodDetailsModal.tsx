@@ -92,25 +92,29 @@ export default function FoodDetailsModal() {
           </div>
 
           {/* Description Glass Card */}
-          <div className="glass-card p-3.5 sm:p-4 rounded-2xl">
-            <h4 className="font-bold text-[#0f2b2d] mb-1 text-xs sm:text-sm">عن الوجبة والمكونات</h4>
-            <p className="text-gray-600 text-xs leading-relaxed">{item.description}</p>
-          </div>
+          {item.description && (
+            <div className="glass-card p-3.5 sm:p-4 rounded-2xl">
+              <h4 className="font-bold text-[#0f2b2d] mb-1 text-xs sm:text-sm">تفاصيل الصنف</h4>
+              <p className="text-gray-600 text-xs leading-relaxed">{item.description}</p>
+            </div>
+          )}
 
           {/* Ingredients Tags */}
-          <div>
-            <h4 className="font-bold text-[#0f2b2d] mb-1.5 text-xs">المكونات الأساسية:</h4>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {item.ingredients.map((ing, idx) => (
-                <span
-                  key={idx}
-                  className="glass-pill text-[#0f2b2d] text-[11px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-medium"
-                >
-                  {ing}
-                </span>
-              ))}
+          {item.ingredients && item.ingredients.length > 0 && (
+            <div>
+              <h4 className="font-bold text-[#0f2b2d] mb-1.5 text-xs">المكونات:</h4>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                {item.ingredients.map((ing, idx) => (
+                  <span
+                    key={idx}
+                    className="glass-pill text-[#0f2b2d] text-[11px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-medium"
+                  >
+                    {ing}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Quantity and Price */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-200/60">
