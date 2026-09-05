@@ -1,9 +1,122 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { X, Heart, Star, Clock, Flame, Plus, Minus, ShoppingBag, FileText } from "lucide-react";
+import { X, Heart, Star, Clock, Flame, Plus, Minus, ShoppingBag, FileText, Check } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { FoodItem } from "@/data/foods";
+
+function getSuggestedNotes(item: FoodItem) {
+  const cat = (item.category || item.categoryName || "").toLowerCase();
+  const name = (item.name || "").toLowerCase();
+
+  // 1. المشروبات الساخنة (Hot Drinks)
+  if (
+    cat.includes("hot-drinks") ||
+    cat.includes("ساخنة") ||
+    cat.includes("قهوة") ||
+    cat.includes("شاي") ||
+    name.includes("مكياطة") ||
+    name.includes("اسبريسو") ||
+    name.includes("شاي") ||
+    name.includes("كابتشينو") ||
+    name.includes("نسكافي") ||
+    name.includes("سنترا") ||
+    name.includes("امريكانو") ||
+    name.includes("هوت شوكلت")
+  ) {
+    return {
+      label: "خيارات وملاحظات المشروب الساخن",
+      placeholder: "مثال: بدون سكر، سكر زيادة، حليب قليل، رغوة كثيفة...",
+      tags: ["بدون سكر", "سكر زيادة", "سكر وسط", "حليب قليل", "حليب زيادة", "سفري"],
+    };
+  }
+
+  // 2. العصائر والمشروبات الباردة والآيس كوفي (Juices, Cold Drinks, Milkshakes)
+  if (
+    cat.includes("juice") ||
+    cat.includes("عصائر") ||
+    cat.includes("عصير") ||
+    name.includes("مانجا") ||
+    name.includes("جوافة") ||
+    name.includes("فراولة") ||
+    name.includes("أفوكادو") ||
+    name.includes("ميلك شيك") ||
+    name.includes("موخيتو") ||
+    name.includes("آيس") ||
+    name.includes("فروبي")
+  ) {
+    return {
+      label: "خيارات وملاحظات المشروب البارد / العصير",
+      placeholder: "مثال: بدون سكر، بدون ثلج، ثلج زيادة، كريمة إضافية...",
+      tags: ["بدون سكر", "سكر خفيف", "بدون ثلج", "ثلج زيادة", "كريمة إضافية", "سفري"],
+    };
+  }
+
+  // 3. السندوتشات (Sandwiches)
+  if (
+    cat.includes("sandwich") ||
+    cat.includes("سندوتش") ||
+    cat.includes("ساندوتش") ||
+    name.includes("مفروم") ||
+    name.includes("تن") ||
+    name.includes("كبدة") ||
+    name.includes("قلايا") ||
+    name.includes("دحي")
+  ) {
+    return {
+      label: "خيارات وملاحظات السندوتش",
+      placeholder: "مثال: شطة زيادة، بدون حار، محمص، بدون بصل...",
+      tags: ["شطة زيادة (حار)", "بدون شطة (بارد)", "محمص ومقرمش", "بدون بصل", "إضافة جبنة", "سفري"],
+    };
+  }
+
+  // 4. البريوش (Brioche)
+  if (cat.includes("brioche") || cat.includes("بريوش") || name.includes("بريوش")) {
+    return {
+      label: "خيارات وملاحظات البريوش",
+      placeholder: "مثال: مسخن دافئ، زيادة نوتيلا، عسل إضافي...",
+      tags: ["مسخن دافئ", "زيادة نوتيلا", "زيادة عسل", "مكسرات زيادة", "سفري"],
+    };
+  }
+
+  // 5. الكريب والبان كيك والوافل (Crepes, Pancakes, Waffles)
+  if (
+    cat.includes("crepe") ||
+    cat.includes("pancake") ||
+    cat.includes("كريب") ||
+    cat.includes("بان كيك") ||
+    name.includes("وافل")
+  ) {
+    return {
+      label: "خيارات وملاحظات الكريب والبان كيك",
+      placeholder: "مثال: نوتيلا زيادة، مقرمش، صوص مكس، فواكه...",
+      tags: ["نوتيلا زيادة", "مكسرات زيادة", "لوتس إضافي", "مقرمش كريسبي", "فواكه زيادة", "سفري"],
+    };
+  }
+
+  // 6. الحلو (Sweets & Cookies)
+  if (
+    cat.includes("sweet") ||
+    cat.includes("حلو") ||
+    name.includes("تيراميسو") ||
+    name.includes("بسبوسة") ||
+    name.includes("كوكيز")
+  ) {
+    return {
+      label: "خيارات وملاحظات الحلى",
+      placeholder: "مثال: مسخن دافئ، صوص زيادة، بدون مكسرات...",
+      tags: ["مسخن دافئ", "شوكولاتة زيادة", "بستاشيو زيادة", "بدون مكسرات", "سفري"],
+    };
+  }
+
+  // Fallback generic
+  return {
+    label: "ملاحظات خاصة على الطلب",
+    placeholder: "اكتب أي تفاصيل أو رغبات خاصة بالطلب...",
+    tags: ["سفري", "طلب سريع", "بدون إضافات"],
+  };
+}
 
 export default function FoodDetailsModal() {
   const { selectedFoodModal, setSelectedFoodModal, addToCart, isFavorite, toggleFavorite } = useApp();
@@ -21,6 +134,30 @@ export default function FoodDetailsModal() {
 
   const item = selectedFoodModal;
   const isFav = isFavorite(item.id);
+  const suggested = getSuggestedNotes(item);
+
+  const toggleTag = (tag: string) => {
+    setNotes((prev) => {
+      const parts = prev
+        .split("، ")
+        .map((p) => p.trim())
+        .filter(Boolean);
+
+      if (parts.includes(tag)) {
+        return parts.filter((p) => p !== tag).join("، ");
+      } else {
+        return [...parts, tag].join("، ");
+      }
+    });
+  };
+
+  const isTagActive = (tag: string) => {
+    const parts = notes
+      .split("، ")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    return parts.includes(tag);
+  };
 
   const handleAdd = () => {
     addToCart(item, quantity, notes.trim() || undefined);
@@ -93,37 +230,46 @@ export default function FoodDetailsModal() {
             </div>
           </div>
 
-          {/* Notes / Special Instructions (Replaces description & ingredients) */}
-          <div className="glass-card p-3 sm:p-3.5 rounded-2xl space-y-2">
+          {/* Smart Dynamic Notes tailored to Item Type */}
+          <div className="glass-card p-3 sm:p-3.5 rounded-2xl space-y-2.5 shadow-sm">
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-[#0f2b2d] text-xs sm:text-sm flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#187a7d]" />
-                <span>ملاحظات خاصة على الطلب</span>
+                <span>{suggested.label}</span>
               </h4>
               <span className="text-[10px] text-gray-400 font-medium">اختياري</span>
             </div>
+
+            {/* Dynamic Quick Chips for this category */}
+            <div className="flex flex-wrap gap-1.5">
+              {suggested.tags.map((tag) => {
+                const active = isTagActive(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={`text-[10.5px] sm:text-xs px-2.5 py-1 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer flex items-center gap-1 ${
+                      active
+                        ? "bg-[#187a7d] text-white font-bold shadow-sm ring-1 ring-[#187a7d]"
+                        : "glass-pill text-gray-700 hover:text-[#187a7d] hover:bg-white"
+                    }`}
+                  >
+                    {active && <Check className="w-3 h-3 text-[#f7d6b5]" />}
+                    <span>{tag}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom Notes Input with Category-Specific Placeholder */}
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="مثال: سكر خفيف، زيادة ثلج، بدون إضافات..."
+              placeholder={suggested.placeholder}
               className="w-full bg-white/80 border border-gray-200/80 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#187a7d]/30 transition font-medium"
             />
-            {/* Quick Chips */}
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
-              {["سكر زيادة", "بدون سكر", "حليب ساخن", "ثلج زيادة", "سفري"].map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() =>
-                    setNotes((prev) => (prev ? (prev.includes(tag) ? prev : `${prev}، ${tag}`) : tag))
-                  }
-                  className="glass-pill text-[10px] text-gray-600 px-2 py-0.5 rounded-lg hover:text-[#187a7d] active:scale-95 transition cursor-pointer"
-                >
-                  + {tag}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Quantity and Price */}
