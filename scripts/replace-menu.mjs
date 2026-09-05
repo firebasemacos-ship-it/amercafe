@@ -1,42 +1,30 @@
-export interface FoodItem {
-  id: string;
-  name: string;
-  category: "hot-drinks" | "juices" | "sandwiches" | "brioche" | "crepe" | "pancake" | "sweets" | string;
-  categoryName: string;
-  price: number;
-  rating: number;
-  reviewsCount: number;
-  deliveryTime: string;
-  calories: number;
-  description: string;
-  image: string;
-  isPopular?: boolean;
-  ingredients: string[];
-}
+import pg from "pg";
 
-export interface Category {
-  id: "hot-drinks" | "juices" | "sandwiches" | "brioche" | "crepe" | "pancake" | "sweets" | string;
-  name: string;
-  icon: string;
-  itemCount: number;
-}
+const connectionString =
+  process.env.DATABASE_URL ||
+  "postgresql://postgres.rbgohyvmjefowkvnjmha:Gz6dnlh3920064400@aws-1-eu-west-1.pooler.supabase.com:5432/postgres";
 
-export const CATEGORIES: Category[] = [
-  { id: "hot-drinks", name: "المشروبات الساخنة", icon: "coffee", itemCount: 18 },
-  { id: "juices", name: "العصائر", icon: "cup-soda", itemCount: 13 },
-  { id: "sandwiches", name: "السندوتشات", icon: "sandwich", itemCount: 9 },
-  { id: "brioche", name: "البريوش", icon: "croissant", itemCount: 2 },
-  { id: "crepe", name: "الكريب", icon: "cake-slice", itemCount: 4 },
-  { id: "pancake", name: "البان كيك", icon: "cake-slice", itemCount: 3 },
-  { id: "sweets", name: "الحلو", icon: "cookie", itemCount: 5 },
+const pool = new pg.Pool({
+  connectionString,
+  ssl: { rejectUnauthorized: false },
+});
+
+const newCategories = [
+  { id: "hot-drinks", name: "المشروبات الساخنة", icon: "coffee", sortOrder: 1 },
+  { id: "juices", name: "العصائر", icon: "cup-soda", sortOrder: 2 },
+  { id: "sandwiches", name: "السندوتشات", icon: "sandwich", sortOrder: 3 },
+  { id: "brioche", name: "البريوش", icon: "croissant", sortOrder: 4 },
+  { id: "crepe", name: "الكريب", icon: "cake-slice", sortOrder: 5 },
+  { id: "pancake", name: "البان كيك", icon: "cake-slice", sortOrder: 6 },
+  { id: "sweets", name: "الحلو", icon: "cookie", sortOrder: 7 },
 ];
 
-export const FOOD_ITEMS: FoodItem[] = [
+const newFoods = [
   // 1. المشروبات الساخنة
   {
     id: "hot-1",
     name: "مكياطة",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 3.0,
     rating: 4.9,
@@ -51,7 +39,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-2",
     name: "اسبريسو",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 3.0,
     rating: 4.9,
@@ -66,7 +54,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-3",
     name: "مكياطة نص نص",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 4.0,
     rating: 4.8,
@@ -81,7 +69,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-4",
     name: "امريكانو",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 3.0,
     rating: 4.8,
@@ -96,7 +84,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-5",
     name: "سبيسيال",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 4.0,
     rating: 4.9,
@@ -111,7 +99,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-6",
     name: "نسكافي حليب",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 4.0,
     rating: 4.7,
@@ -126,7 +114,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-7",
     name: "نسكافي بلاك",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 3.0,
     rating: 4.6,
@@ -141,7 +129,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-8",
     name: "قهوة عربية سادة",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 4.0,
     rating: 4.9,
@@ -156,7 +144,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-9",
     name: "نسكويك",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 4.0,
     rating: 4.8,
@@ -171,7 +159,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-10",
     name: "شاي أحمر تونسي نعناع",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 3.0,
     rating: 4.9,
@@ -186,7 +174,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-11",
     name: "شاي أخضر تونسي نعناع",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 3.0,
     rating: 4.9,
@@ -201,7 +189,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-12",
     name: "كابتشينو إيطالي نوتيلا مكسرات",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 8.0,
     rating: 5.0,
@@ -216,7 +204,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-13",
     name: "كابتشينو إيطالي عادي",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 6.0,
     rating: 4.8,
@@ -231,7 +219,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-14",
     name: "هوت شوكلت",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 10.0,
     rating: 4.9,
@@ -246,7 +234,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-15",
     name: "سنترا حجم صغير",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 6.0,
     rating: 4.7,
@@ -261,7 +249,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-16",
     name: "سنترا حجم وسط",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 8.0,
     rating: 4.8,
@@ -276,7 +264,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-17",
     name: "سنترا حجم كبير",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 10.0,
     rating: 4.9,
@@ -291,7 +279,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "hot-18",
     name: "فرابتشينو",
-    category: "hot-drinks",
+    categoryId: "hot-drinks",
     categoryName: "المشروبات الساخنة",
     price: 14.0,
     rating: 4.9,
@@ -308,7 +296,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-1",
     name: "مانجا",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 7.0,
     rating: 4.9,
@@ -323,7 +311,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-2",
     name: "جوافة",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 6.0,
     rating: 4.7,
@@ -338,7 +326,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-3",
     name: "فراولة",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 5.0,
     rating: 4.8,
@@ -353,7 +341,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-4",
     name: "فروبي مانجا مكسرات",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 8.0,
     rating: 5.0,
@@ -368,7 +356,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-5",
     name: "فروبي فراولة",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 7.0,
     rating: 4.9,
@@ -383,7 +371,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-6",
     name: "أفوكادو",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 10.0,
     rating: 4.8,
@@ -398,7 +386,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-7",
     name: "أفوكادو عسل مكسرات",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 15.0,
     rating: 5.0,
@@ -413,7 +401,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-8",
     name: "ميلك شيك (لوتس + نوتيلا + بستاشيو) حجم L",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 15.0,
     rating: 5.0,
@@ -428,7 +416,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-9",
     name: "ميلك شيك (لوتس + نوتيلا + بستاشيو) حجم XL",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 17.0,
     rating: 5.0,
@@ -443,7 +431,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-10",
     name: "آيس كوفي",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 12.0,
     rating: 4.9,
@@ -458,7 +446,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-11",
     name: "آيس سبانش لاتيه",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 12.0,
     rating: 5.0,
@@ -473,7 +461,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-12",
     name: "موخيتو",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 12.0,
     rating: 4.9,
@@ -488,7 +476,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "juice-13",
     name: "آيس أمريكانو",
-    category: "juices",
+    categoryId: "juices",
     categoryName: "العصائر",
     price: 12.0,
     rating: 4.8,
@@ -505,7 +493,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-1",
     name: "مفروم وطني",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 4.0,
     rating: 4.9,
@@ -520,7 +508,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-2",
     name: "مفروم دحي",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 5.0,
     rating: 5.0,
@@ -535,7 +523,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-3",
     name: "تن",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 3.0,
     rating: 4.8,
@@ -550,7 +538,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-4",
     name: "تن دحي",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 4.0,
     rating: 4.9,
@@ -565,7 +553,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-5",
     name: "دحي جبنة",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 4.0,
     rating: 4.8,
@@ -580,7 +568,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-6",
     name: "كبدة وطني",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 13.0,
     rating: 5.0,
@@ -595,7 +583,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-7",
     name: "قلايا لحم وطني",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 10.0,
     rating: 5.0,
@@ -610,7 +598,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-8",
     name: "كبدة دجاج",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 7.0,
     rating: 4.8,
@@ -625,7 +613,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sand-9",
     name: "إضافة جبنة",
-    category: "sandwiches",
+    categoryId: "sandwiches",
     categoryName: "السندوتشات",
     price: 1.0,
     rating: 4.9,
@@ -642,7 +630,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "brioche-1",
     name: "بريوش نوتيلا مكسرات",
-    category: "brioche",
+    categoryId: "brioche",
     categoryName: "البريوش",
     price: 10.0,
     rating: 5.0,
@@ -657,7 +645,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "brioche-2",
     name: "بريوش جبنة عسل وزعتر",
-    category: "brioche",
+    categoryId: "brioche",
     categoryName: "البريوش",
     price: 10.0,
     rating: 4.9,
@@ -674,7 +662,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "crepe-1",
     name: "كريب رول",
-    category: "crepe",
+    categoryId: "crepe",
     categoryName: "الكريب",
     price: 20.0,
     rating: 4.9,
@@ -689,7 +677,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "crepe-2",
     name: "كريب كلاسيك نوتيلا",
-    category: "crepe",
+    categoryId: "crepe",
     categoryName: "الكريب",
     price: 25.0,
     rating: 5.0,
@@ -704,7 +692,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "crepe-3",
     name: "كريب مكس",
-    category: "crepe",
+    categoryId: "crepe",
     categoryName: "الكريب",
     price: 25.0,
     rating: 5.0,
@@ -719,7 +707,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "crepe-4",
     name: "كريب تام فواكه",
-    category: "crepe",
+    categoryId: "crepe",
     categoryName: "الكريب",
     price: 35.0,
     rating: 5.0,
@@ -736,7 +724,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "pancake-1",
     name: "بان كيك نوتيلا مكسرات",
-    category: "pancake",
+    categoryId: "pancake",
     categoryName: "البان كيك",
     price: 20.0,
     rating: 4.9,
@@ -751,7 +739,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "pancake-2",
     name: "بان كيك نوتيلا مكسرات فواكه",
-    category: "pancake",
+    categoryId: "pancake",
     categoryName: "البان كيك",
     price: 30.0,
     rating: 5.0,
@@ -766,7 +754,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "pancake-3",
     name: "وافل اختراع تام",
-    category: "pancake",
+    categoryId: "pancake",
     categoryName: "البان كيك",
     price: 30.0,
     rating: 5.0,
@@ -783,7 +771,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sweet-1",
     name: "تيراميسو",
-    category: "sweets",
+    categoryId: "sweets",
     categoryName: "الحلو",
     price: 10.0,
     rating: 5.0,
@@ -798,7 +786,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sweet-2",
     name: "بسبوسة بالقشطة",
-    category: "sweets",
+    categoryId: "sweets",
     categoryName: "الحلو",
     price: 6.0,
     rating: 4.9,
@@ -813,7 +801,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sweet-3",
     name: "بسبوسة جلاكسي",
-    category: "sweets",
+    categoryId: "sweets",
     categoryName: "الحلو",
     price: 6.0,
     rating: 4.9,
@@ -828,7 +816,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sweet-4",
     name: "كوكيز نوتيلا",
-    category: "sweets",
+    categoryId: "sweets",
     categoryName: "الحلو",
     price: 8.0,
     rating: 5.0,
@@ -843,7 +831,7 @@ export const FOOD_ITEMS: FoodItem[] = [
   {
     id: "sweet-5",
     name: "كوكيز دبل بستاشيو",
-    category: "sweets",
+    categoryId: "sweets",
     categoryName: "الحلو",
     price: 10.0,
     rating: 5.0,
@@ -857,24 +845,76 @@ export const FOOD_ITEMS: FoodItem[] = [
   },
 ];
 
-export interface Order {
-  id: string;
-  items: Array<{
-    name?: string;
-    quantity?: number;
-    price?: number;
-    notes?: string;
-    item?: any;
-  }>;
-  total: number;
-  date: string;
-  status: "جاري التحضير" | "في الطريق" | "تم التسليم" | "ملغي" | string;
-  address: string;
-  customer_name?: string;
-  customer_phone?: string;
+async function run() {
+  console.log("Connecting to PostgreSQL...");
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    console.log("1. Cleaning old foods and categories...");
+    await client.query("DELETE FROM foods;");
+    await client.query("DELETE FROM categories;");
+
+    console.log("2. Inserting new categories...");
+    for (const cat of newCategories) {
+      await client.query(
+        `INSERT INTO categories (id, name, icon, item_count, sort_order)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [cat.id, cat.name, cat.icon, 0, cat.sortOrder]
+      );
+    }
+
+    console.log(`3. Inserting ${newFoods.length} new foods...`);
+    for (const food of newFoods) {
+      await client.query(
+        `INSERT INTO foods (
+          id, name, category_id, category_name, price, rating, reviews_count,
+          delivery_time, calories, description, image, is_popular, ingredients
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          food.id,
+          food.name,
+          food.categoryId,
+          food.categoryName,
+          food.price,
+          food.rating,
+          food.reviewsCount,
+          food.deliveryTime,
+          food.calories,
+          food.description,
+          food.image,
+          food.isPopular,
+          JSON.stringify(food.ingredients),
+        ]
+      );
+    }
+
+    console.log("4. Updating categories item counts...");
+    for (const cat of newCategories) {
+      await client.query(
+        `UPDATE categories
+         SET item_count = (SELECT COUNT(*) FROM foods WHERE category_id = $1)
+         WHERE id = $1`,
+        [cat.id]
+      );
+    }
+
+    console.log("5. Updating banners category IDs to new categories...");
+    await client.query(
+      `UPDATE banners SET category_id = 'hot-drinks' WHERE category_id NOT IN ('hot-drinks', 'juices', 'sandwiches', 'brioche', 'crepe', 'pancake', 'sweets')`
+    );
+
+    await client.query("COMMIT");
+    console.log("🎉 Successfully replaced all categories and items in the database!");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("❌ Error replacing menu in database:", err);
+    process.exit(1);
+  } finally {
+    client.release();
+    await pool.end();
+  }
 }
 
-export type OrderItem = Order;
-
-export const INITIAL_ORDERS: Order[] = [];
-
+run();

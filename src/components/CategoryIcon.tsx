@@ -61,24 +61,36 @@ export function CategoryIcon({
   const key = `${id} ${icon} ${name}`.toLowerCase().trim();
 
   // 3. Map to Clean SVG Vector Icons
-  if (key.includes("coffee") || key.includes("☕") || key.includes("قهوة") || key.includes("مشروبات ساخنة") || key.includes("لاتيه") || key.includes("كولد برو")) {
+  if (key.includes("coffee") || key.includes("☕") || key.includes("قهوة") || key.includes("مشروبات ساخنة") || key.includes("المشروبات الساخنة") || key.includes("لاتيه") || key.includes("كولد برو") || key.includes("hot-drinks")) {
     return <Coffee className={className} />;
   }
 
-  if (key.includes("dessert") || key.includes("🍰") || key.includes("حلويات") || key.includes("سويت") || key.includes("كيك") || key.includes("تشيز")) {
+  if (key.includes("juice") || key.includes("عصائر") || key.includes("العصائر") || key.includes("عصير") || key.includes("فروبي") || key.includes("ميلك شيك") || key.includes("موخيتو") || key.includes("juices")) {
+    return <CupSoda className={className} />;
+  }
+
+  if (key.includes("sandwich") || key.includes("🥪") || key.includes("ساندوتش") || key.includes("سندوتش") || key.includes("السندوتشات") || key.includes("sandwiches")) {
+    return <Sandwich className={className} />;
+  }
+
+  if (key.includes("brioche") || key.includes("بريوش") || key.includes("البريوش") || key.includes("pastry") || key.includes("🥐") || key.includes("مخبوزات") || key.includes("كرواسون") || key.includes("فطور")) {
+    return <Croissant className={className} />;
+  }
+
+  if (key.includes("crepe") || key.includes("كريب") || key.includes("الكريب")) {
     return <CakeSlice className={className} />;
+  }
+
+  if (key.includes("pancake") || key.includes("بان كيك") || key.includes("البان كيك") || key.includes("وافل")) {
+    return <CakeSlice className={className} />;
+  }
+
+  if (key.includes("sweet") || key.includes("حلو") || key.includes("الحلو") || key.includes("تيراميسو") || key.includes("بسبوسة") || key.includes("كوكيز") || key.includes("dessert") || key.includes("🍰") || key.includes("حلويات") || key.includes("سويت") || key.includes("كيك") || key.includes("تشيز")) {
+    return <Cookie className={className} />;
   }
 
   if (key.includes("cookie") || key.includes("🍪") || key.includes("بسكويت")) {
     return <Cookie className={className} />;
-  }
-
-  if (key.includes("pastry") || key.includes("🥐") || key.includes("مخبوزات") || key.includes("كرواسون") || key.includes("فطور")) {
-    return <Croissant className={className} />;
-  }
-
-  if (key.includes("sandwich") || key.includes("🥪") || key.includes("ساندوتش") || key.includes("سندوتش")) {
-    return <Sandwich className={className} />;
   }
 
   if (key.includes("burger") || key.includes("🍔") || key.includes("برجر")) {
@@ -93,7 +105,7 @@ export function CategoryIcon({
     return <Salad className={className} />;
   }
 
-  if (key.includes("drink") || key.includes("🥤") || key.includes("🧋") || key.includes("مشروبات") || key.includes("باردة") || key.includes("موهيتو") || key.includes("عصير")) {
+  if (key.includes("drink") || key.includes("🥤") || key.includes("🧋") || key.includes("مشروبات") || key.includes("باردة")) {
     return <CupSoda className={className} />;
   }
 
