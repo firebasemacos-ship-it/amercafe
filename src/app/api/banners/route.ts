@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const rows = await query("SELECT * FROM banners WHERE is_active = true ORDER BY created_at DESC");
+    const { searchParams } = new URL(request.url);
+    const activeOnly = searchParams.get("active_only") === "true";
+    const sql = activeOnly
+      ? "SELECT * FROM banners WHERE is_active = true ORDER BY created_at DESC"
+      : "SELECT * FROM banners ORDER BY created_at DESC";
+    const rows = await query(sql);
     return NextResponse.json({ success: true, data: rows });
   } catch (error) {
     console.error("Failed to fetch banners:", error);

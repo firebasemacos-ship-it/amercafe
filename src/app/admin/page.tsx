@@ -74,9 +74,10 @@ export default function AdminDashboardPage() {
   const [categoryForm, setCategoryForm] = useState({ id: "", name: "", icon: "☕" });
 
   const [showBannerModal, setShowBannerModal] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<any | null>(null);
   const [bannerForm, setBannerForm] = useState({
     title: "",
-    category_id: "coffee",
+    category_id: "hot-drinks",
     image: "",
     is_active: true,
   });
@@ -304,19 +305,44 @@ export default function AdminDashboardPage() {
   };
 
   // --- BANNER CRUD ---
+  const handleOpenEditBanner = (banner: any) => {
+    setEditingBanner(banner);
+    setBannerForm({
+      title: banner.title || "",
+      category_id: banner.category_id || categories[0]?.id || "hot-drinks",
+      image: banner.image || "",
+      is_active: banner.is_active ?? true,
+    });
+    setShowBannerModal(true);
+  };
+
   const handleSaveBanner = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch("/api/banners", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bannerForm),
-      });
-      notifyAction("تمت إضافة البنر الإعلاني بنجاح!");
+      if (editingBanner) {
+        const res = await fetch("/api/banners", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...bannerForm, id: editingBanner.id }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || "فشل تحديث البنر");
+        notifyAction("تم تحديث وتعديل البنر الإعلاني بنجاح! ✅");
+      } else {
+        const res = await fetch("/api/banners", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bannerForm),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || "فشل إضافة البنر");
+        notifyAction("تمت إضافة البنر الإعلاني بنجاح! 🚀");
+      }
       setShowBannerModal(false);
+      setEditingBanner(null);
       fetchAllData();
-    } catch {
-      notifyAction("فشل حفظ البنر");
+    } catch (err: any) {
+      notifyAction(err.message || "فشل حفظ البنر");
     }
   };
 
@@ -542,10 +568,16 @@ export default function AdminDashboardPage() {
                     <span className="text-[10px] text-gray-400 block mt-1">موزعة على {categories.length} أقسام</span>
                   </div>
 
-                  <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15">
+                  <div
+                    onClick={() => setActiveTab("banners")}
+                    className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15 cursor-pointer hover:border-purple-400 hover:shadow-md transition group"
+                  >
                     <span className="text-xs text-gray-500 font-bold block mb-1">البنرات والعروض</span>
                     <span className="text-2xl font-black text-purple-600">{banners.length}</span>
-                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">كود FIRST40 نشط</span>
+                    <span className="text-[10px] text-purple-700 font-bold block mt-1 flex items-center justify-between">
+                      <span>إدارة وحذف البنرات</span>
+                      <span className="text-purple-600 group-hover:translate-x-[-2px] transition">←</span>
+                    </span>
                   </div>
                 </div>
 
@@ -553,7 +585,7 @@ export default function AdminDashboardPage() {
                 <div className="bg-gradient-to-r from-[#0b3335] to-[#187a7d] text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-black text-[#f7d6b5]">تحكم سريع في كافي عامر</h3>
-                    <p className="text-xs text-white/80 mt-1">يمكنك إضافة أطباق جديدة، رفع صور عبر ImgBB، وتعديل الأسعار والأقسام.</p>
+                    <p className="text-xs text-white/80 mt-1">يمكنك إضافة أطباق جديدة، رفع صور عبر ImgBB، وتعديل الأسعار والأقسام والبنرات.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -561,8 +593,8 @@ export default function AdminDashboardPage() {
                         setEditingFood(null);
                         setFoodForm({
                           name: "",
-                          category: "coffee",
-                          categoryName: "قهوة ومشروبات",
+                          category: "hot-drinks",
+                          categoryName: "المشروبات الساخنة",
                           price: "",
                           calories: "250",
                           description: "",
@@ -572,10 +604,22 @@ export default function AdminDashboardPage() {
                         });
                         setShowFoodModal(true);
                       }}
-                      className="bg-[#f7d6b5] text-[#0b3335] hover:bg-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition"
+                      className="bg-[#f7d6b5] text-[#0b3335] hover:bg-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
                       <span>إضافة صنف جديد</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setEditingBanner(null);
+                        setBannerForm({ title: "", category_id: categories[0]?.id || "hot-drinks", image: "", is_active: true });
+                        setShowBannerModal(true);
+                      }}
+                      className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <ImageIcon className="w-4 h-4 text-[#f7d6b5]" />
+                      <span>إضافة بنر إعلاني</span>
                     </button>
 
                     <button
@@ -584,7 +628,7 @@ export default function AdminDashboardPage() {
                         setCategoryForm({ id: "", name: "", icon: "☕" });
                         setShowCategoryModal(true);
                       }}
-                      className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition"
+                      className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <Layers className="w-4 h-4" />
                       <span>إضافة قسم جديد</span>
@@ -595,12 +639,75 @@ export default function AdminDashboardPage() {
                         setNotifForm({ title: "", message: "", type: "promo" });
                         setShowNotifModal(true);
                       }}
-                      className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition"
+                      className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <Bell className="w-4 h-4" />
                       <span>إرسال إشعار فوري</span>
                     </button>
                   </div>
+                </div>
+
+                {/* Active Banners Section in Overview */}
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-[#187a7d]" />
+                      <h3 className="font-black text-sm text-[#0f2b2d]">البنرات الإعلانية في الواجهة ({banners.length})</h3>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("banners")}
+                      className="text-xs text-[#187a7d] font-bold hover:underline cursor-pointer"
+                    >
+                      فتح صفحة البنرات الكاملة ←
+                    </button>
+                  </div>
+
+                  {banners.length === 0 ? (
+                    <div className="p-6 text-center text-gray-400 text-xs bg-[#f4f8f8] rounded-2xl">
+                      لا توجد بنرات حالياً في قاعدة البيانات. اضغط على "إضافة بنر إعلاني" لإضافة بنر جديد.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {banners.map((b) => {
+                        const linkedCat = categories.find((c) => c.id === b.category_id);
+                        return (
+                          <div key={b.id} className="p-3 bg-[#f4f8f8] rounded-2xl flex items-center gap-3 border border-gray-100 hover:border-[#187a7d]/30 transition">
+                            {b.image ? (
+                              <div className="w-24 h-14 relative rounded-xl overflow-hidden flex-shrink-0 bg-gray-200 border border-white">
+                                <Image src={b.image} alt={b.title || "بنر"} fill unoptimized className="object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-24 h-14 rounded-xl bg-gray-200 flex items-center justify-center text-[10px] text-gray-500">
+                                بدون صورة
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-xs text-[#0f2b2d] truncate">{b.title || "بنر إعلاني"}</h4>
+                              <span className="text-[10px] text-[#187a7d] font-medium block mt-0.5">🔗 ينقل إلى: {linkedCat?.name || "كل الأقسام"}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <button
+                                onClick={() => handleOpenEditBanner(b)}
+                                className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                title="تعديل البنر"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                                <span>تعديل</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBanner(b.id)}
+                                className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                title="حذف البنر"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>حذف</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Latest Orders Preview */}
@@ -877,10 +984,11 @@ export default function AdminDashboardPage() {
                   </div>
                   <button
                     onClick={() => {
-                      setBannerForm({ title: "", category_id: categories[0]?.id || "coffee", image: "", is_active: true });
+                      setEditingBanner(null);
+                      setBannerForm({ title: "", category_id: categories[0]?.id || "hot-drinks", image: "", is_active: true });
                       setShowBannerModal(true);
                     }}
-                    className="bg-[#187a7d] hover:bg-[#136265] text-white text-xs font-black px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-md shadow-[#187a7d]/20 transition"
+                    className="bg-[#187a7d] hover:bg-[#136265] text-white text-xs font-black px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-md shadow-[#187a7d]/20 transition cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>إضافة بنر جديد</span>
@@ -896,10 +1004,11 @@ export default function AdminDashboardPage() {
                     </p>
                     <button
                       onClick={() => {
-                        setBannerForm({ title: "", category_id: categories[0]?.id || "coffee", image: "", is_active: true });
+                        setEditingBanner(null);
+                        setBannerForm({ title: "", category_id: categories[0]?.id || "hot-drinks", image: "", is_active: true });
                         setShowBannerModal(true);
                       }}
-                      className="bg-[#187a7d] hover:bg-[#136265] text-white text-xs font-black px-4 py-2.5 rounded-2xl inline-flex items-center gap-1.5 shadow-md shadow-[#187a7d]/20 transition"
+                      className="bg-[#187a7d] hover:bg-[#136265] text-white text-xs font-black px-4 py-2.5 rounded-2xl inline-flex items-center gap-1.5 shadow-md shadow-[#187a7d]/20 transition cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
                       <span>إضافة أول بنر إعلاني</span>
@@ -941,14 +1050,24 @@ export default function AdminDashboardPage() {
                               </div>
                             </div>
 
-                            <button
-                              onClick={() => handleDeleteBanner(banner.id)}
-                              className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition flex items-center gap-1 text-xs font-bold"
-                              title="حذف البنر"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>حذف</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleOpenEditBanner(banner)}
+                                className="px-3 py-2 bg-[#e4f2f2] hover:bg-[#d0e8e8] text-[#187a7d] rounded-xl transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                                title="تعديل البنر"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                <span>تعديل</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBanner(banner.id)}
+                                className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                                title="حذف البنر"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>حذف</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -1398,13 +1517,21 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* --- BANNER MODAL WITH IMGBB UPLOAD --- */}
+      {/* --- BANNER MODAL WITH IMGBB UPLOAD & EDITING --- */}
       {showBannerModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[32px] p-6 max-w-md w-full space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-black text-sm text-[#0f2b2d]">إضافة بنر إعلاني جديد</h3>
-              <button onClick={() => setShowBannerModal(false)} className="p-1 text-gray-400">
+              <h3 className="font-black text-sm text-[#0f2b2d]">
+                {editingBanner ? "تعديل البنر الإعلاني" : "إضافة بنر إعلاني جديد"}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowBannerModal(false);
+                  setEditingBanner(null);
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 transition cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1413,12 +1540,12 @@ export default function AdminDashboardPage() {
               {/* Banner Image Uploader */}
               <div>
                 <label className="font-bold text-gray-700 block mb-1.5">
-                  صورة البنر الإعلاني (عبر ImgBB)
+                  صورة البنر الإعلاني (عبر ImgBB أو رابط مباشر)
                 </label>
                 
                 <div className="border-2 border-dashed border-[#187a7d]/30 rounded-2xl p-3.5 bg-[#f4f8f8] text-center space-y-2">
                   {bannerForm.image ? (
-                    <div className="relative w-full h-28 rounded-xl overflow-hidden shadow-sm border border-[#187a7d]/30">
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden shadow-sm border border-[#187a7d]/30">
                       <Image
                         src={bannerForm.image}
                         alt="معاينة البنر"
@@ -1429,16 +1556,17 @@ export default function AdminDashboardPage() {
                       <button
                         type="button"
                         onClick={() => setBannerForm({ ...bannerForm, image: "" })}
-                        className="absolute top-1 end-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition"
+                        className="absolute top-1.5 end-1.5 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition cursor-pointer"
+                        title="إزالة الصورة"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ) : (
                     <p className="text-[11px] text-gray-500">اختر صورة لتظهر كخلفية أو ملصق للبنر</p>
                   )}
 
-                  <div className="flex items-center justify-center">
+                  <div className="flex flex-col gap-2 items-center justify-center">
                     <input
                       type="file"
                       ref={bannerFileInputRef}
@@ -1453,7 +1581,7 @@ export default function AdminDashboardPage() {
                       type="button"
                       disabled={uploadingBannerImg}
                       onClick={() => bannerFileInputRef.current?.click()}
-                      className="bg-[#187a7d] hover:bg-[#136265] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm disabled:opacity-50"
+                      className="bg-[#187a7d] hover:bg-[#136265] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm disabled:opacity-50 cursor-pointer"
                     >
                       {uploadingBannerImg ? (
                         <>
@@ -1463,10 +1591,19 @@ export default function AdminDashboardPage() {
                       ) : (
                         <>
                           <Upload className="w-3.5 h-3.5 text-[#f7d6b5]" />
-                          <span>رفع صورة البنر 🎨</span>
+                          <span>رفع صورة البنر عبر ImgBB 🎨</span>
                         </>
                       )}
                     </button>
+
+                    {/* Direct Image URL input */}
+                    <input
+                      type="text"
+                      value={bannerForm.image}
+                      onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })}
+                      placeholder="أو الصق رابط صورة البنر هنا مباشرة (https://...)"
+                      className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-[11px] font-medium text-gray-800"
+                    />
                   </div>
                 </div>
               </div>
@@ -1479,7 +1616,7 @@ export default function AdminDashboardPage() {
                 <select
                   value={bannerForm.category_id}
                   onChange={(e) => setBannerForm({ ...bannerForm, category_id: e.target.value })}
-                  className="w-full p-3 bg-[#f4f8f8] border border-gray-200 rounded-2xl font-bold"
+                  className="w-full p-3 bg-[#f4f8f8] border border-gray-200 rounded-2xl font-bold text-gray-800"
                 >
                   <option value="all">✨ كل الأقسام (صفحة البحث والتصفية)</option>
                   {categories.map((c) => (
@@ -1498,16 +1635,30 @@ export default function AdminDashboardPage() {
                   value={bannerForm.title}
                   onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
                   placeholder="مثال: بنر القهوة المختصة أو بنر الحلويات"
-                  className="w-full p-3 bg-[#f4f8f8] border border-gray-200 rounded-2xl font-bold"
+                  className="w-full p-3 bg-[#f4f8f8] border border-gray-200 rounded-2xl font-bold text-gray-800"
                 />
+              </div>
+
+              {/* Active Toggle */}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="banner-active-check"
+                  checked={bannerForm.is_active}
+                  onChange={(e) => setBannerForm({ ...bannerForm, is_active: e.target.checked })}
+                  className="w-4 h-4 rounded text-[#187a7d] focus:ring-[#187a7d]"
+                />
+                <label htmlFor="banner-active-check" className="font-bold text-gray-700 cursor-pointer text-xs">
+                  تفعيل ظهور البنر في الصفحة الرئيسية
+                </label>
               </div>
 
               <button
                 type="submit"
                 disabled={!bannerForm.image}
-                className="w-full bg-[#187a7d] hover:bg-[#136265] text-white py-3 rounded-2xl font-black shadow-md transition disabled:opacity-50"
+                className="w-full bg-[#187a7d] hover:bg-[#136265] text-white py-3 rounded-2xl font-black shadow-md transition disabled:opacity-50 cursor-pointer"
               >
-                نشر البنر 🚀
+                {editingBanner ? "حفظ التعديلات ✅" : "نشر البنر 🚀"}
               </button>
             </form>
           </div>
