@@ -28,6 +28,18 @@ import {
   Upload,
   UploadCloud,
   CheckCircle2,
+  Menu,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Store,
+  Calendar,
+  DollarSign,
+  AlertCircle,
+  LayoutDashboard,
+  ArrowUpRight,
 } from "lucide-react";
 import { FoodItem, Category, Order } from "@/data/foods";
 import { CategoryIcon } from "@/components/CategoryIcon";
@@ -86,10 +98,27 @@ export default function AdminDashboardPage() {
   const [notifForm, setNotifForm] = useState({ title: "", message: "", type: "promo" });
 
   const [mounted, setMounted] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [foodSearchQuery, setFoodSearchQuery] = useState("");
+  const [foodCategoryFilter, setFoodCategoryFilter] = useState("all");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [todayFormatted, setTodayFormatted] = useState("");
 
-  // Auth Check
+  // Auth Check & Date setup
   useEffect(() => {
     setMounted(true);
+    try {
+      setTodayFormatted(
+        new Date().toLocaleDateString("ar-LY", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      );
+    } catch {
+      setTodayFormatted("اليوم");
+    }
     const isAuth = localStorage.getItem("amer_admin_auth");
     if (!isAuth) {
       router.push("/admin/login");
@@ -463,6 +492,72 @@ export default function AdminDashboardPage() {
   const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
   const activeOrdersCount = orders.filter((o) => o.status !== "تم التوصيل").length;
 
+  const filteredFoods = foods.filter((food) => {
+    const query = foodSearchQuery.trim().toLowerCase();
+    const matchesSearch =
+      !query ||
+      food.name?.toLowerCase().includes(query) ||
+      food.categoryName?.toLowerCase().includes(query);
+    const matchesCategory =
+      foodCategoryFilter === "all" || food.category === foodCategoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const filteredOrders = orders.filter((order) => {
+    if (orderStatusFilter === "all") return true;
+    return order.status === orderStatusFilter;
+  });
+
+  interface NavTabItem {
+    id: "overview" | "foods" | "categories" | "banners" | "orders" | "notifications" | "settings";
+    label: string;
+    icon: any;
+    count: number | null;
+    alertCount?: number;
+    group: string;
+  }
+
+  const navTabs: NavTabItem[] = [
+    { id: "overview", label: "نظرة عامة", icon: LayoutDashboard, count: null, group: "الرئيسية" },
+    { id: "foods", label: "الأصناف والأسعار", icon: Coffee, count: foods.length, group: "المنيو والمحتوى" },
+    { id: "categories", label: "الأقسام والتصنيفات", icon: Layers, count: categories.length, group: "المنيو والمحتوى" },
+    { id: "banners", label: "البنرات والعروض", icon: ImageIcon, count: banners.length, group: "المنيو والمحتوى" },
+    { id: "orders", label: "طلبات الزبائن", icon: ShoppingBag, count: orders.length, alertCount: activeOrdersCount, group: "المبيعات والعملاء" },
+    { id: "notifications", label: "إشعارات الزوار", icon: Bell, count: notifications.length, group: "المبيعات والعملاء" },
+    { id: "settings", label: "إعدادات الكافي", icon: Settings, count: null, group: "النظام" },
+  ];
+
+  const tabTitles: Record<string, { title: string; desc: string }> = {
+    overview: {
+      title: "نظرة عامة والإحصائيات",
+      desc: "لوحة مؤشرات أداء كافي عامر، إجمالي المبيعات، ومتابعة الطلبات المباشرة",
+    },
+    foods: {
+      title: "إدارة الأصناف والأسعار",
+      desc: "تحكم بقائمة المشروبات والأطعمة، تعديل الأسعار، ورفع الصور عبر ImgBB",
+    },
+    categories: {
+      title: "الأقسام والتصنيفات",
+      desc: "إدارة أقسام المنيو وتعديل الأيقونات وحذف أو إضافة تصنيفات جديدة",
+    },
+    orders: {
+      title: "إدارة الطلبات الحية",
+      desc: "متابعة طلبات الزبائن لحظياً وتحديث حالات التوصيل أو حذف الطلبات من السجل",
+    },
+    banners: {
+      title: "البنرات والعروض الترويجية",
+      desc: "رفع بنرات العروض عبر ImgBB وربطها بالأقسام المباشرة في واجهة المتجر",
+    },
+    notifications: {
+      title: "الإشعارات الفورية",
+      desc: "بث إشعارات ترويجية وتنبيهات مباشرة لجميع زوار موقع كافي عامر",
+    },
+    settings: {
+      title: "إعدادات ومعلومات الكافي",
+      desc: "تعديل أوقات العمل، أرقام الهاتف، العناوين وروابط خرائط جوجل",
+    },
+  };
+
   if (!mounted) {
     return (
       <div suppressHydrationWarning className="min-h-screen bg-[#f4f8f8] flex items-center justify-center">
@@ -475,52 +570,11 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div suppressHydrationWarning className="min-h-screen bg-[#f4f8f8] text-[#0f2b2d] flex flex-col font-sans" dir="rtl">
-      {/* Top Navbar */}
-      <header className="bg-[#0b3335] text-white px-6 py-4 flex items-center justify-between shadow-md border-b border-[#f7d6b5]/20 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#187a7d] p-0.5 border border-[#f7d6b5]/30 overflow-hidden shadow-inner">
-            <Image
-              src="/images/logo.png"
-              alt="كافي عامر"
-              width={40}
-              height={40}
-              unoptimized
-              className="w-full h-full object-contain rounded-xl"
-            />
-          </div>
-          <div>
-            <h1 className="font-black text-base flex items-center gap-2">
-              <span>لوحة تحكم كافي عامر</span>
-              <span className="text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-bold">
-                Admin
-              </span>
-            </h1>
-            <p className="text-[11px] text-[#7ea9ab]">طبرق ، مفترق رابعة • رفع عبر ImgBB</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            target="_blank"
-            className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition border border-white/10"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>عرض المتجر</span>
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className="bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition border border-red-500/30"
-            title="تسجيل الخروج"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>خروج</span>
-          </button>
-        </div>
-      </header>
-
+    <div
+      suppressHydrationWarning
+      className="min-h-screen bg-[#f1f6f6] text-[#0f2b2d] flex flex-col lg:flex-row font-sans selection:bg-[#187a7d] selection:text-white"
+      dir="rtl"
+    >
       {/* Action Toast Notification */}
       {actionMessage && (
         <div className="fixed top-20 start-1/2 -translate-x-1/2 bg-[#0b3335] text-[#f7d6b5] border-2 border-[#f7d6b5] px-6 py-3 rounded-full font-bold text-xs shadow-2xl z-50 animate-in slide-in-from-top flex items-center gap-2">
@@ -529,80 +583,463 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Main Tabs Navigation */}
-      <div className="bg-white border-b border-gray-200 px-6 py-2.5 overflow-x-auto scrollbar-hide flex gap-2">
-        {[
-          { id: "overview", label: "نظرة عامة", icon: TrendingUp },
-          { id: "foods", label: `الأصناف والأسعار (${foods.length})`, icon: Coffee },
-          { id: "categories", label: `الأقسام (${categories.length})`, icon: Layers },
-          { id: "orders", label: `الطلبات (${orders.length})`, icon: ShoppingBag },
-          { id: "banners", label: `البنرات (${banners.length})`, icon: ImageIcon },
-          { id: "notifications", label: `الإشعارات (${notifications.length})`, icon: Bell },
-          { id: "settings", label: "إعدادات الكافي", icon: Settings },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all flex-shrink-0 ${
-                isActive
-                  ? "bg-[#187a7d] text-white shadow-md shadow-[#187a7d]/25"
-                  : "bg-[#f4f8f8] text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* MOBILE DRAWER (Slide-over from right) */}
+      {isMobileDrawerOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex justify-start">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileDrawerOpen(false)}
+          />
 
-      {/* Dashboard Body */}
-      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <RefreshCw className="w-8 h-8 text-[#187a7d] animate-spin" />
-            <p className="text-sm font-bold text-gray-500">جاري تحميل بيانات كافي عامر من قاعدة البيانات...</p>
-          </div>
-        ) : (
-          <>
-            {/* 1. OVERVIEW TAB */}
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15">
-                    <span className="text-xs text-gray-500 font-bold block mb-1">إجمالي المبيعات</span>
-                    <span className="text-2xl font-black text-[#187a7d]">{totalRevenue.toFixed(2)} د.ل</span>
-                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">🇱🇾 بالدينار الليبي</span>
+          <aside className="relative w-72 max-w-[85vw] bg-[#0b3335] text-white h-full flex flex-col justify-between shadow-2xl z-10 overflow-y-auto animate-in slide-in-from-right duration-250">
+            <div>
+              {/* Drawer Header */}
+              <div className="p-5 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#187a7d] p-1 border border-[#f7d6b5]/30 overflow-hidden shadow-inner flex-shrink-0">
+                    <Image
+                      src="/images/logo.png"
+                      alt="كافي عامر"
+                      width={40}
+                      height={40}
+                      unoptimized
+                      className="w-full h-full object-contain rounded-xl"
+                    />
                   </div>
-
-                  <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15">
-                    <span className="text-xs text-gray-500 font-bold block mb-1">الطلبات النشطة</span>
-                    <span className="text-2xl font-black text-amber-600">{activeOrdersCount}</span>
-                    <span className="text-[10px] text-gray-400 block mt-1">من إجمالي {orders.length} طلب</span>
-                  </div>
-
-                  <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15">
-                    <span className="text-xs text-gray-500 font-bold block mb-1">عدد الأصناف بالموقع</span>
-                    <span className="text-2xl font-black text-[#0b3335]">{foods.length}</span>
-                    <span className="text-[10px] text-gray-400 block mt-1">موزعة على {categories.length} أقسام</span>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab("banners")}
-                    className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15 cursor-pointer hover:border-purple-400 hover:shadow-md transition group"
-                  >
-                    <span className="text-xs text-gray-500 font-bold block mb-1">البنرات والعروض</span>
-                    <span className="text-2xl font-black text-purple-600">{banners.length}</span>
-                    <span className="text-[10px] text-purple-700 font-bold block mt-1 flex items-center justify-between">
-                      <span>إدارة وحذف البنرات</span>
-                      <span className="text-purple-600 group-hover:translate-x-[-2px] transition">←</span>
-                    </span>
+                  <div>
+                    <h2 className="font-black text-sm text-white">كافي عامر</h2>
+                    <span className="text-[10px] text-[#7ea9ab]">لوحة الإدارة والتحكم</span>
                   </div>
                 </div>
+                <button
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Admin Card */}
+              <div className="mx-4 my-3 p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#187a7d] text-[#f7d6b5] font-black text-xs flex items-center justify-center">
+                    ع
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-white">المدير العام</p>
+                    <p className="text-[10px] text-gray-400">تحكم كامل بالنظام</p>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-lg border border-emerald-500/30">
+                  نشط
+                </span>
+              </div>
+
+              {/* Navigation List grouped */}
+              <div className="p-3 space-y-4">
+                {["الرئيسية", "المنيو والمحتوى", "المبيعات والعملاء", "النظام"].map((groupName) => {
+                  const items = navTabs.filter((t) => t.group === groupName);
+                  return (
+                    <div key={groupName} className="space-y-1">
+                      <p className="px-3 text-[10px] font-bold text-[#7ea9ab]">{groupName}</p>
+                      {items.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => {
+                              setActiveTab(tab.id as any);
+                              setIsMobileDrawerOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                              isActive
+                                ? "bg-[#187a7d] text-white shadow-md shadow-[#187a7d]/30 font-black"
+                                : "text-gray-300 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-400"}`} />
+                              <span>{tab.label}</span>
+                            </div>
+                            {tab.alertCount && tab.alertCount > 0 ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-black animate-pulse">
+                                {tab.alertCount} جديد
+                              </span>
+                            ) : tab.count !== null ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white/80">
+                                {tab.count}
+                              </span>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="p-4 border-t border-white/10 space-y-2">
+              <Link
+                href="/"
+                target="_blank"
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="w-full bg-white/10 hover:bg-white/15 text-white text-xs font-bold p-3 rounded-2xl flex items-center justify-between transition"
+              >
+                <div className="flex items-center gap-2">
+                  <Store className="w-4 h-4 text-[#f7d6b5]" />
+                  <span>عرض المتجر</span>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-bold p-2.5 rounded-2xl flex items-center justify-center gap-2 transition"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>تسجيل الخروج</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* DESKTOP SIDEBAR (Pinned on right side in RTL) */}
+      <aside className="hidden lg:flex flex-col w-64 xl:w-72 bg-[#0b3335] text-white h-screen sticky top-0 border-l border-[#187a7d]/25 z-40 flex-shrink-0 shadow-2xl justify-between overflow-y-auto">
+        <div>
+          {/* Header Brand */}
+          <div className="p-6 border-b border-white/10 flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#187a7d] p-1 border border-[#f7d6b5]/30 overflow-hidden shadow-lg flex-shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt="كافي عامر"
+                width={48}
+                height={48}
+                unoptimized
+                className="w-full h-full object-contain rounded-xl"
+              />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="font-black text-white text-base truncate">كافي عامر</h1>
+                <span className="text-[10px] bg-[#f7d6b5] text-[#0b3335] px-2 py-0.5 rounded-full font-black">
+                  Admin
+                </span>
+              </div>
+              <p className="text-[11px] text-[#7ea9ab] flex items-center gap-1.5 mt-0.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                <span>طبرق • متصل</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Admin Card */}
+          <div className="mx-4 my-4 p-3.5 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#187a7d] text-[#f7d6b5] font-black text-sm flex items-center justify-center shadow-xs">
+                ع
+              </div>
+              <div>
+                <p className="text-xs font-black text-white">المدير العام</p>
+                <p className="text-[10px] text-gray-400">لوحة الإدارة والتحكم</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-lg border border-emerald-500/30">
+              نشط
+            </span>
+          </div>
+
+          {/* Navigation Groups */}
+          <div className="px-3 space-y-4">
+            {["الرئيسية", "المنيو والمحتوى", "المبيعات والعملاء", "النظام"].map((groupName) => {
+              const items = navTabs.filter((t) => t.group === groupName);
+              return (
+                <div key={groupName} className="space-y-1">
+                  <p className="px-3 text-[10px] font-bold text-[#7ea9ab] uppercase tracking-wider">{groupName}</p>
+                  {items.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
+                          isActive
+                            ? "bg-[#187a7d] text-white shadow-md shadow-[#187a7d]/30 font-black"
+                            : "text-gray-300 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-400"}`} />
+                          <span>{tab.label}</span>
+                        </div>
+                        {tab.alertCount && tab.alertCount > 0 ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-black animate-pulse">
+                            {tab.alertCount} جديد
+                          </span>
+                        ) : tab.count !== null ? (
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? "bg-white/20 text-white" : "bg-white/10 text-white/80"}`}>
+                            {tab.count}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-white/10 space-y-2 mt-auto">
+          <Link
+            href="/"
+            target="_blank"
+            className="w-full bg-white/10 hover:bg-white/15 text-white text-xs font-bold p-3 rounded-2xl flex items-center justify-between transition border border-white/10"
+          >
+            <div className="flex items-center gap-2">
+              <Store className="w-4 h-4 text-[#f7d6b5]" />
+              <span>عرض المتجر</span>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+          </Link>
+
+          <button
+            onClick={fetchAllData}
+            disabled={loading}
+            className="w-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-bold p-2.5 rounded-2xl flex items-center justify-center gap-2 transition border border-white/5 disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[#187a7d] ${loading ? "animate-spin" : ""}`} />
+            <span>تحديث البيانات من السيرفر</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-bold p-2.5 rounded-2xl flex items-center justify-center gap-2 transition border border-red-500/20 cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>تسجيل الخروج</span>
+          </button>
+
+          <div className="pt-2 text-center">
+            <p className="text-[10px] text-gray-400 leading-tight">
+              برمجة وتطوير شركة هوية للتسويق الرقمي
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT WORKSPACE */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+        {/* DESKTOP TOP HEADER */}
+        <header className="hidden lg:flex items-center justify-between bg-white px-8 py-4 border-b border-gray-200/80 sticky top-0 z-30 shadow-xs">
+          <div>
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-bold mb-0.5">
+              <span>لوحة التحكم</span>
+              <ChevronLeft className="w-3 h-3" />
+              <span className="text-[#187a7d]">{tabTitles[activeTab]?.title}</span>
+            </div>
+            <h1 className="text-xl font-black text-[#0f2b2d]">{tabTitles[activeTab]?.title}</h1>
+            <p className="text-xs text-gray-500 mt-0.5">{tabTitles[activeTab]?.desc}</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {todayFormatted && (
+              <div className="hidden xl:flex items-center gap-2 bg-[#f4f8f8] border border-gray-200/70 text-[#0b3335] px-3.5 py-2 rounded-2xl text-xs font-bold">
+                <Calendar className="w-3.5 h-3.5 text-[#187a7d]" />
+                <span>{todayFormatted}</span>
+              </div>
+            )}
+
+            <button
+              onClick={fetchAllData}
+              disabled={loading}
+              className="p-2.5 bg-[#f4f8f8] hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="تحديث البيانات"
+            >
+              <RefreshCw className={`w-4 h-4 text-[#187a7d] ${loading ? "animate-spin" : ""}`} />
+              <span className="hidden xl:inline">تحديث</span>
+            </button>
+
+            <Link
+              href="/"
+              target="_blank"
+              className="bg-[#e4f2f2] hover:bg-[#d5eded] text-[#187a7d] text-xs font-black px-4 py-2.5 rounded-2xl flex items-center gap-1.5 transition border border-[#187a7d]/20 shadow-xs"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>زيارة المتجر</span>
+            </Link>
+
+            <div className="h-6 w-px bg-gray-200 mx-1" />
+
+            <div className="flex items-center gap-2.5 pe-1">
+              <div className="w-9 h-9 rounded-2xl bg-[#0b3335] text-[#f7d6b5] font-black text-xs flex items-center justify-center shadow-xs">
+                ع
+              </div>
+              <div className="text-start">
+                <p className="text-xs font-black text-[#0f2b2d] leading-tight">المدير العام</p>
+                <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                  متصل
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* MOBILE TOPBAR */}
+        <header className="lg:hidden bg-[#0b3335] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/15 text-white cursor-pointer active:scale-95 transition"
+              aria-label="القائمة الجانبية"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="w-9 h-9 rounded-xl bg-[#187a7d] p-0.5 border border-[#f7d6b5]/30 overflow-hidden shadow-inner flex-shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt="كافي عامر"
+                width={36}
+                height={36}
+                unoptimized
+                className="w-full h-full object-contain rounded-lg"
+              />
+            </div>
+
+            <div>
+              <h1 className="font-black text-sm flex items-center gap-1.5">
+                <span>كافي عامر</span>
+                <span className="text-[9px] bg-[#f7d6b5] text-[#0b3335] px-1.5 py-0.2 rounded-full font-black">Admin</span>
+              </h1>
+              <p className="text-[10px] text-[#7ea9ab] flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>طبرق • متصل</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              target="_blank"
+              className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition flex items-center gap-1"
+              title="معاينة المتجر"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-xl text-xs font-bold transition"
+              title="خروج"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </header>
+
+        {/* MOBILE QUICK PILLS BAR (Sticky right under mobile topbar) */}
+        <div className="lg:hidden bg-white border-b border-gray-200 px-3 py-2 overflow-x-auto scrollbar-hide flex gap-1.5 sticky top-[57px] z-20 shadow-xs">
+          {navTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${
+                  isActive
+                    ? "bg-[#187a7d] text-white shadow-xs"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+                {tab.count !== null && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? "bg-white/25 text-white" : "bg-gray-200 text-gray-600"}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Dashboard Body */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <RefreshCw className="w-8 h-8 text-[#187a7d] animate-spin" />
+              <p className="text-sm font-bold text-gray-500">جاري تحميل بيانات كافي عامر من قاعدة البيانات...</p>
+            </div>
+          ) : (
+            <>
+              {/* 1. OVERVIEW TAB */}
+              {activeTab === "overview" && (
+                <div className="space-y-6">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15 flex items-center justify-between hover:shadow-md transition">
+                      <div>
+                        <span className="text-xs text-gray-500 font-bold block mb-1">إجمالي المبيعات</span>
+                        <span className="text-2xl font-black text-[#187a7d]">{totalRevenue.toFixed(2)} د.ل</span>
+                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">🇱🇾 بالدينار الليبي</span>
+                      </div>
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <DollarSign className="w-6 h-6" />
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => setActiveTab("orders")}
+                      className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15 flex items-center justify-between hover:shadow-md hover:border-amber-400 transition cursor-pointer"
+                    >
+                      <div>
+                        <span className="text-xs text-gray-500 font-bold block mb-1">الطلبات النشطة</span>
+                        <span className="text-2xl font-black text-amber-600">{activeOrdersCount}</span>
+                        <span className="text-[10px] text-gray-400 block mt-1">من إجمالي {orders.length} طلب</span>
+                      </div>
+                      <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <ShoppingBag className="w-6 h-6" />
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => setActiveTab("foods")}
+                      className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15 flex items-center justify-between hover:shadow-md hover:border-[#187a7d] transition cursor-pointer"
+                    >
+                      <div>
+                        <span className="text-xs text-gray-500 font-bold block mb-1">عدد الأصناف بالمنيو</span>
+                        <span className="text-2xl font-black text-[#0b3335]">{foods.length}</span>
+                        <span className="text-[10px] text-gray-400 block mt-1">موزعة على {categories.length} أقسام</span>
+                      </div>
+                      <div className="w-12 h-12 rounded-2xl bg-[#e4f2f2] text-[#187a7d] flex items-center justify-center">
+                        <Coffee className="w-6 h-6" />
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => setActiveTab("banners")}
+                      className="bg-white p-5 rounded-3xl shadow-sm border border-[#187a7d]/15 flex items-center justify-between hover:border-purple-400 hover:shadow-md transition cursor-pointer group"
+                    >
+                      <div>
+                        <span className="text-xs text-gray-500 font-bold block mb-1">البنرات والعروض</span>
+                        <span className="text-2xl font-black text-purple-600">{banners.length}</span>
+                        <span className="text-[10px] text-purple-700 font-bold block mt-1 flex items-center gap-1">
+                          <span>إدارة البنرات</span>
+                          <span className="group-hover:translate-x-[-2px] transition">←</span>
+                        </span>
+                      </div>
+                      <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </div>
 
                 {/* Quick Actions */}
                 <div className="bg-gradient-to-r from-[#0b3335] to-[#187a7d] text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
@@ -776,7 +1213,7 @@ export default function AdminDashboardPage() {
               <div className="space-y-5">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div>
-                    <h2 className="text-lg font-black text-[#0f2b2d]">إدارة الأصناف والأسعار</h2>
+                    <h2 className="text-lg font-black text-[#0f2b2d]">إدارة الأصناف والأسعار ({foods.length})</h2>
                     <p className="text-xs text-gray-500">تحكم بأسعار ومكونات وصور كافة الأطباق والمشروبات في كافي عامر</p>
                   </div>
                   <button
@@ -784,8 +1221,8 @@ export default function AdminDashboardPage() {
                       setEditingFood(null);
                       setFoodForm({
                         name: "",
-                        category: "coffee",
-                        categoryName: "قهوة ومشروبات",
+                        category: categories[0]?.id || "hot-drinks",
+                        categoryName: categories[0]?.name || "المشروبات الساخنة",
                         price: "",
                         calories: "250",
                         description: "",
@@ -795,83 +1232,149 @@ export default function AdminDashboardPage() {
                       });
                       setShowFoodModal(true);
                     }}
-                    className="bg-[#187a7d] hover:bg-[#136265] text-white text-xs font-black px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-md shadow-[#187a7d]/20 transition"
+                    className="bg-[#187a7d] hover:bg-[#136265] text-white text-xs font-black px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-md shadow-[#187a7d]/20 transition cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>إضافة طبق / مشروب جديد</span>
+                    <span>إضافة صنف جديد</span>
                   </button>
                 </div>
 
-                {/* Foods Table / Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {foods.map((food) => (
-                    <div
-                      key={food.id}
-                      className="bg-white rounded-3xl p-4 shadow-sm border border-[#187a7d]/15 flex flex-col justify-between hover:shadow-md transition"
-                    >
-                      <div>
-                        <div className="w-full h-40 rounded-2xl overflow-hidden relative bg-gray-100 mb-3">
-                          <Image
-                            src={food.image}
-                            alt={food.name}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                          />
-                          <div className="absolute top-2 end-2 bg-[#0b3335]/90 backdrop-blur-md text-[#f7d6b5] text-xs px-2.5 py-1 rounded-xl font-black">
-                            {Number(food.price).toFixed(2)} د.ل
-                          </div>
-                          {food.isPopular && (
-                            <span className="absolute top-2 start-2 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow">
-                              شائع 🔥
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] bg-[#e4f2f2] text-[#187a7d] px-2 py-0.5 rounded-full font-bold">
-                            {food.categoryName}
-                          </span>
-                          <span className="text-[10px] text-gray-400">{food.calories} سعرة</span>
-                        </div>
-
-                        <h3 className="font-black text-sm text-[#0f2b2d] mb-1 line-clamp-1">{food.name}</h3>
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">{food.description}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                {/* Search and Category Filter Toolbar */}
+                <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-200/80 space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                    <div className="relative w-full sm:w-80">
+                      <Search className="w-4 h-4 text-gray-400 absolute start-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={foodSearchQuery}
+                        onChange={(e) => setFoodSearchQuery(e.target.value)}
+                        placeholder="ابحث باسم الصنف (مثال: اسبريسو، فرابتشينو)..."
+                        className="w-full ps-9 pe-9 py-2.5 bg-[#f4f8f8] rounded-2xl border border-gray-200 text-xs font-bold outline-none focus:border-[#187a7d] transition"
+                      />
+                      {foodSearchQuery && (
                         <button
-                          onClick={() => {
-                            setEditingFood(food);
-                            setFoodForm({
-                              name: food.name,
-                              category: food.category,
-                              categoryName: food.categoryName,
-                              price: food.price.toString(),
-                              calories: food.calories.toString(),
-                              description: food.description,
-                              image: food.image,
-                              isPopular: Boolean(food.isPopular),
-                              ingredients: food.ingredients ? food.ingredients.join(", ") : "",
-                            });
-                            setShowFoodModal(true);
-                          }}
-                          className="flex-1 bg-[#e4f2f2] hover:bg-[#d5eded] text-[#187a7d] py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition"
+                          onClick={() => setFoodSearchQuery("")}
+                          className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
-                          <span>تعديل السعر والصورة</span>
+                          <X className="w-3.5 h-3.5" />
                         </button>
-                        <button
-                          onClick={() => handleDeleteFood(food.id)}
-                          className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition"
-                          title="حذف"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      )}
                     </div>
-                  ))}
+
+                    <div className="text-xs font-bold text-gray-500 self-end sm:self-center">
+                      عرض <span className="text-[#187a7d] font-black">{filteredFoods.length}</span> من أصل <span className="text-[#0b3335] font-black">{foods.length}</span> صنف
+                    </div>
+                  </div>
+
+                  {/* Category Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide pt-1 border-t border-gray-100">
+                    <button
+                      onClick={() => setFoodCategoryFilter("all")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex-shrink-0 cursor-pointer ${
+                        foodCategoryFilter === "all"
+                          ? "bg-[#187a7d] text-white shadow-xs font-black"
+                          : "bg-[#f4f8f8] text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      الكل ({foods.length})
+                    </button>
+                    {categories.map((cat) => {
+                      const count = foods.filter((f) => f.category === cat.id).length;
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => setFoodCategoryFilter(cat.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex-shrink-0 cursor-pointer ${
+                            foodCategoryFilter === cat.id
+                              ? "bg-[#187a7d] text-white shadow-xs font-black"
+                              : "bg-[#f4f8f8] text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          {cat.name} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {/* Foods Grid */}
+                {filteredFoods.length === 0 ? (
+                  <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-200 space-y-2">
+                    <Search className="w-10 h-10 text-gray-300 mx-auto" />
+                    <h3 className="font-black text-sm text-[#0f2b2d]">لم يتم العثور على أي صنف مطابق</h3>
+                    <p className="text-xs text-gray-400">جرب كتابة اسم مختلف أو اضغط على قسم آخر.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredFoods.map((food) => (
+                      <div
+                        key={food.id}
+                        className="bg-white rounded-3xl p-4 shadow-sm border border-[#187a7d]/15 flex flex-col justify-between hover:shadow-md transition"
+                      >
+                        <div>
+                          <div className="w-full h-40 rounded-2xl overflow-hidden relative bg-gray-100 mb-3 border border-gray-100">
+                            <Image
+                              src={food.image || "/images/logo.png"}
+                              alt={food.name}
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
+                            <div className="absolute top-2 end-2 bg-[#0b3335]/90 backdrop-blur-md text-[#f7d6b5] text-xs px-2.5 py-1 rounded-xl font-black shadow">
+                              {Number(food.price).toFixed(2)} د.ل
+                            </div>
+                            {food.isPopular && (
+                              <span className="absolute top-2 start-2 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow">
+                                شائع 🔥
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] bg-[#e4f2f2] text-[#187a7d] px-2.5 py-0.5 rounded-full font-bold">
+                              {food.categoryName}
+                            </span>
+                            <span className="text-[10px] text-gray-400">{food.calories} سعرة</span>
+                          </div>
+
+                          <h3 className="font-black text-sm text-[#0f2b2d] mb-1 line-clamp-1">{food.name}</h3>
+                          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">{food.description}</p>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                          <button
+                            onClick={() => {
+                              setEditingFood(food);
+                              setFoodForm({
+                                name: food.name,
+                                category: food.category,
+                                categoryName: food.categoryName,
+                                price: food.price.toString(),
+                                calories: food.calories.toString(),
+                                description: food.description,
+                                image: food.image,
+                                isPopular: Boolean(food.isPopular),
+                                ingredients: food.ingredients ? food.ingredients.join(", ") : "",
+                              });
+                              setShowFoodModal(true);
+                            }}
+                            className="flex-1 bg-[#e4f2f2] hover:bg-[#d5eded] text-[#187a7d] py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition cursor-pointer"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>تعديل السعر والصورة</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFood(food.id)}
+                            className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition cursor-pointer"
+                            title="حذف"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -957,64 +1460,118 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
 
+                {/* Status Filter Tabs */}
+                {orders.length > 0 && (
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {[
+                      { id: "all", label: "جميع الطلبات", count: orders.length },
+                      {
+                        id: "جاري التحضير",
+                        label: "🟡 جاري التحضير",
+                        count: orders.filter((o) => o.status === "جاري التحضير").length,
+                      },
+                      {
+                        id: "في الطريق",
+                        label: "🛵 في الطريق",
+                        count: orders.filter((o) => o.status === "في الطريق").length,
+                      },
+                      {
+                        id: "تم التوصيل",
+                        label: "🟢 تم التوصيل",
+                        count: orders.filter((o) => o.status === "تم التوصيل").length,
+                      },
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        onClick={() => setOrderStatusFilter(st.id)}
+                        className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
+                          orderStatusFilter === st.id
+                            ? "bg-[#187a7d] text-white shadow-xs font-black"
+                            : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span>{st.label}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                            orderStatusFilter === st.id ? "bg-white/25 text-white" : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {st.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {orders.length === 0 ? (
                   <div className="bg-white rounded-3xl p-10 text-center border border-dashed border-[#187a7d]/30 space-y-2">
                     <ShoppingBag className="w-10 h-10 text-[#187a7d]/40 mx-auto mb-1" />
                     <h3 className="font-black text-sm text-[#0f2b2d]">لا توجد أي طلبات حالياً في السجل</h3>
                     <p className="text-xs text-gray-400">سجل الطلبات فارغ تماماً وتم تنظيفه بنجاح.</p>
                   </div>
+                ) : filteredOrders.length === 0 ? (
+                  <div className="bg-white rounded-3xl p-8 text-center border border-gray-200 space-y-2">
+                    <p className="text-xs font-bold text-gray-500">لا توجد طلبات في قسم الحالة المحدد ({orderStatusFilter})</p>
+                  </div>
                 ) : (
                   <div className="space-y-3">
-                  {orders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="bg-white rounded-3xl p-5 shadow-sm border border-[#187a7d]/15 space-y-4"
-                    >
-                      <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-gray-100">
-                        <div>
-                          <span className="font-black text-sm text-[#0f2b2d]">{order.id}</span>
-                          <span className="text-xs text-gray-400 ms-2">{order.date}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={order.status}
-                            onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                            className="bg-[#e4f2f2] text-[#187a7d] text-xs font-black px-3 py-1.5 rounded-xl border border-[#187a7d]/20 outline-none"
-                          >
-                            <option value="جاري التحضير">🟡 جاري التحضير</option>
-                            <option value="في الطريق">🛵 في الطريق</option>
-                            <option value="تم التوصيل">🟢 تم التوصيل</option>
-                          </select>
-                          <button
-                            onClick={() => handleDeleteOrder(order.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 transition"
-                            title="حذف الطلب"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Items */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        {order.items?.map(({ item, quantity }: any, i: number) => (
-                          <div key={i} className="flex items-center gap-2 bg-[#f4f8f8] p-2 rounded-xl">
-                            <span className="text-xs font-bold text-[#0f2b2d]">{quantity}× {item?.name}</span>
-                            <span className="text-[10px] text-gray-400 ms-auto">{(Number(item?.price) * quantity).toFixed(2)} د.ل</span>
+                    {filteredOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="bg-white rounded-3xl p-5 shadow-sm border border-[#187a7d]/15 space-y-4 hover:shadow-md transition"
+                      >
+                        <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-gray-100">
+                          <div>
+                            <span className="font-black text-sm text-[#0f2b2d]">{order.id}</span>
+                            <span className="text-xs text-gray-400 ms-2">{order.date}</span>
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                              className="bg-[#e4f2f2] text-[#187a7d] text-xs font-black px-3 py-1.5 rounded-xl border border-[#187a7d]/20 outline-none cursor-pointer"
+                            >
+                              <option value="جاري التحضير">🟡 جاري التحضير</option>
+                              <option value="في الطريق">🛵 في الطريق</option>
+                              <option value="تم التوصيل">🟢 تم التوصيل</option>
+                            </select>
+                            <button
+                              onClick={() => handleDeleteOrder(order.id)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 transition cursor-pointer"
+                              title="حذف الطلب"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between pt-2 text-xs">
-                        <span className="text-gray-500">📍 العنوان: <strong className="text-[#0f2b2d]">{order.address}</strong></span>
-                        <span className="font-black text-base text-[#187a7d]">الإجمالي: {Number(order.total).toFixed(2)} د.ل</span>
+                        {/* Items */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          {order.items?.map(({ item, quantity, notes }: any, i: number) => (
+                            <div key={i} className="flex flex-col bg-[#f4f8f8] p-2.5 rounded-xl border border-gray-100/80">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-[#0f2b2d]">{quantity}× {item?.name}</span>
+                                <span className="text-[10px] text-gray-400">{(Number(item?.price) * quantity).toFixed(2)} د.ل</span>
+                              </div>
+                              {notes && (
+                                <span className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200 mt-1.5 font-medium">
+                                  📝 {notes}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 text-xs border-t border-gray-50">
+                          <span className="text-gray-500">📍 العنوان: <strong className="text-[#0f2b2d]">{order.address}</strong></span>
+                          <span className="font-black text-base text-[#187a7d]">الإجمالي: {Number(order.total).toFixed(2)} د.ل</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 5. BANNERS TAB */}
             {activeTab === "banners" && (
@@ -1249,6 +1806,7 @@ export default function AdminDashboardPage() {
           </>
         )}
       </main>
+      </div>
 
       {/* --- FOOD EDIT/ADD MODAL WITH IMGBB UPLOAD --- */}
       {showFoodModal && (
