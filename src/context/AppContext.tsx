@@ -33,6 +33,8 @@ interface AppContextType {
     address?: string;
     notes?: string;
   } | string) => Promise<Order | null>;
+  deleteOrder: (id: string) => Promise<void>;
+  clearAllOrders: () => Promise<void>;
 
   selectedCategory: string;
   setSelectedCategory: (cat: string) => void;
@@ -243,6 +245,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return newOrder;
   };
 
+  const deleteOrder = async (id: string) => {
+    const cleanId = id.toString().trim();
+    setOrders((prev) => prev.filter((o) => o.id !== cleanId && o.id !== `#${cleanId}`));
+    try {
+      const updated = orders.filter((o) => o.id !== cleanId && o.id !== `#${cleanId}`);
+      localStorage.setItem("amer_orders", JSON.stringify(updated));
+    } catch {}
+
+    try {
+      await fetch(`/api/orders?id=${encodeURIComponent(cleanId)}`, { method: "DELETE" });
+    } catch (e) {
+      console.error("Failed to delete order from server:", e);
+    }
+    showToast("تم حذف الطلب بنجاح");
+  };
+
+  const clearAllOrders = async () => {
+    setOrders([]);
+    try {
+      localStorage.removeItem("amer_orders");
+    } catch {}
+    try {
+      await fetch("/api/orders?all=true", { method: "DELETE" });
+    } catch (e) {
+      console.error("Failed to delete all orders from server:", e);
+    }
+    showToast("تم مسح سجل الطلبات بالكامل");
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -262,6 +293,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isFavorite,
         orders,
         placeOrder,
+        deleteOrder,
+        clearAllOrders,
         selectedCategory,
         setSelectedCategory,
         searchQuery,

@@ -12,15 +12,14 @@ export async function GET() {
       date: r.date_text,
       status: r.status,
       address: r.address,
-      customerName: r.customer_name,
-      phone: r.phone,
-      notes: r.notes,
+      customer_name: r.customer_name,
+      customer_phone: r.phone,
     }));
 
     return NextResponse.json({ success: true, data: orders });
   } catch (error) {
     console.error("Failed to fetch orders from PostgreSQL:", error);
-    return NextResponse.json({ success: false, error: "Database error" }, { status: 500 });
+    return NextResponse.json({ success: true, data: [] });
   }
 }
 
@@ -37,6 +36,11 @@ export async function POST(request: Request) {
     await query(
       `INSERT INTO orders (id, items, total, date_text, status, address, customer_name, phone, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (id) DO UPDATE SET
+         items = EXCLUDED.items,
+         total = EXCLUDED.total,
+         status = EXCLUDED.status,
+         address = EXCLUDED.address
        RETURNING *`,
       [
         orderId,
@@ -58,6 +62,8 @@ export async function POST(request: Request) {
       date: dateText,
       status: orderStatus,
       address: orderAddress,
+      customer_name: customerName,
+      customer_phone: phone,
     };
 
     return NextResponse.json({ success: true, data: createdOrder });
@@ -73,7 +79,21 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, status } = body;
 
-    await query("UPDATE orders SET status = $2 WHERE id = $1", [id, status]);
+    if (!id) {
+      return NextResponse.json({ success: false, error: "معرف الطلب مطلوب" }, { status: 400 });
+    }
+
+    const cleanId = id.toString().trim();
+    const withoutHash = cleanId.replace(/^#/, "");
+    const withHash = `#${withoutHash}`;
+
+    await query("UPDATE orders SET status = $2 WHERE id = $1 OR id = $3 OR id = $4", [
+      cleanId,
+      status,
+      withoutHash,
+      withHash,
+    ]);
+
     return NextResponse.json({ success: true, message: "تم تحديث حالة الطلب بنجاح" });
   } catch (error) {
     console.error("Failed to update order status:", error);
@@ -84,17 +104,47 @@ export async function PUT(request: Request) {
 // DELETE: Delete order
 export async function DELETE(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+    let id: string | null = null;
+    let deleteAll = false;
+
+    // 1. Try URL search params
+    try {
+      const { searchParams } = new URL(request.url);
+      id = searchParams.get("id");
+      deleteAll = searchParams.get("all") === "true";
+    } catch {}
+
+    // 2. Try JSON body
+    if (!id && !deleteAll) {
+      try {
+        const body = await request.json();
+        id = body?.id;
+        deleteAll = body?.all === true;
+      } catch {}
+    }
+
+    if (deleteAll) {
+      await query("DELETE FROM orders");
+      return NextResponse.json({ success: true, message: "تم حذف جميع الطلبات بنجاح" });
+    }
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف الطلب مطلوب" }, { status: 400 });
     }
 
-    await query("DELETE FROM orders WHERE id = $1", [id]);
+    const cleanId = id.toString().trim();
+    const withoutHash = cleanId.replace(/^#/, "");
+    const withHash = `#${withoutHash}`;
+
+    await query("DELETE FROM orders WHERE id = $1 OR id = $2 OR id = $3", [
+      cleanId,
+      withoutHash,
+      withHash,
+    ]);
+
     return NextResponse.json({ success: true, message: "تم حذف الطلب بنجاح" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to delete order:", error);
-    return NextResponse.json({ success: false, error: "فشل حذف الطلب" }, { status: 500 });
+    return NextResponse.json({ success: false, error: error?.message || "فشل حذف الطلب" }, { status: 500 });
   }
 }

@@ -412,11 +412,34 @@ export default function AdminDashboardPage() {
   const handleDeleteOrder = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا الطلب من السجل؟")) return;
     try {
-      await fetch(`/api/orders?id=${id}`, { method: "DELETE" });
-      notifyAction("تم حذف الطلب");
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+      const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "فشل حذف الطلب من السيرفر");
+      }
+      notifyAction("تم حذف الطلب بنجاح ✅");
       fetchAllData();
-    } catch {
-      notifyAction("فشل حذف الطلب");
+    } catch (err: any) {
+      notifyAction(err.message || "فشل حذف الطلب");
+      fetchAllData();
+    }
+  };
+
+  const handleClearAllOrders = async () => {
+    if (!confirm("⚠️ تحذير: هل أنت متأكد من مسح جميع طلبات الزبائن من السجل بالكامل؟")) return;
+    try {
+      setOrders([]);
+      const res = await fetch("/api/orders?all=true", { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "فشل مسح الطلبات");
+      }
+      notifyAction("تم مسح جميع الطلبات من السجل بنجاح ✅");
+      fetchAllData();
+    } catch (err: any) {
+      notifyAction(err.message || "فشل مسح الطلبات");
+      fetchAllData();
     }
   };
 
@@ -918,12 +941,30 @@ export default function AdminDashboardPage() {
             {/* 4. ORDERS TAB */}
             {activeTab === "orders" && (
               <div className="space-y-5">
-                <div>
-                  <h2 className="text-lg font-black text-[#0f2b2d]">إدارة الطلبات الحية</h2>
-                  <p className="text-xs text-gray-500">متابعة طلبات الزبائن وتغيير حالات التوصيل في طبرق</p>
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <h2 className="text-lg font-black text-[#0f2b2d]">إدارة الطلبات الحية ({orders.length})</h2>
+                    <p className="text-xs text-gray-500">متابعة طلبات الزبائن وتغيير حالات التوصيل في طبرق أو حذفها</p>
+                  </div>
+                  {orders.length > 0 && (
+                    <button
+                      onClick={handleClearAllOrders}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-black px-4 py-2 rounded-2xl flex items-center gap-1.5 border border-red-200/60 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>مسح جميع الطلبات من السجل</span>
+                    </button>
+                  )}
                 </div>
 
-                <div className="space-y-3">
+                {orders.length === 0 ? (
+                  <div className="bg-white rounded-3xl p-10 text-center border border-dashed border-[#187a7d]/30 space-y-2">
+                    <ShoppingBag className="w-10 h-10 text-[#187a7d]/40 mx-auto mb-1" />
+                    <h3 className="font-black text-sm text-[#0f2b2d]">لا توجد أي طلبات حالياً في السجل</h3>
+                    <p className="text-xs text-gray-400">سجل الطلبات فارغ تماماً وتم تنظيفه بنجاح.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
                   {orders.map((order) => (
                     <div
                       key={order.id}
@@ -971,8 +1012,9 @@ export default function AdminDashboardPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
             {/* 5. BANNERS TAB */}
             {activeTab === "banners" && (

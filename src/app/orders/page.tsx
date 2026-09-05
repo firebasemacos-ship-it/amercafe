@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Clock, CheckCircle2, RotateCcw, Truck, MapPin, ClipboardList } from "lucide-react";
+import { ChevronRight, Clock, CheckCircle2, RotateCcw, Truck, MapPin, ClipboardList, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useApp } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 
 export default function OrdersPage() {
-  const { orders, addToCart, showToast } = useApp();
+  const { orders, addToCart, showToast, deleteOrder, clearAllOrders } = useApp();
   const router = useRouter();
 
   const handleReorder = (orderItems: typeof orders[0]["items"]) => {
-    orderItems.forEach(({ item, quantity }) => {
+    orderItems.forEach((orderItem) => {
+      const item = (orderItem as any).item || orderItem;
+      const quantity = orderItem.quantity || 1;
       addToCart(item, quantity);
     });
     showToast("تمت إضافة عناصر الطلب إلى سلة كافي عامر");
@@ -55,7 +57,20 @@ export default function OrdersPage() {
           <ChevronRight className="w-5 h-5" />
         </Link>
         <h1 className="text-sm sm:text-base font-black text-[#0f2b2d]">طلبات كافي عامر</h1>
-        <div className="w-9 sm:w-10"></div>
+        {orders.length > 0 ? (
+          <button
+            onClick={() => {
+              if (confirm("هل أنت متأكد من مسح جميع طلباتك من السجل؟")) {
+                clearAllOrders();
+              }
+            }}
+            className="text-[11px] text-red-500 hover:text-red-600 font-bold px-2 py-1 rounded-xl hover:bg-red-50/80 transition cursor-pointer"
+          >
+            مسح الكل
+          </button>
+        ) : (
+          <div className="w-9 sm:w-10"></div>
+        )}
       </header>
 
       <div className="p-4 sm:p-6 space-y-4">
@@ -92,27 +107,35 @@ export default function OrdersPage() {
 
               {/* Items Thumbnails & Names */}
               <div className="space-y-2">
-                {order.items.map(({ item, quantity }, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden relative flex-shrink-0 bg-gray-100 border border-white/60">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
+                {order.items?.map((itemObj: any, idx: number) => {
+                  const foodItem = itemObj.item || itemObj;
+                  const qty = itemObj.quantity || 1;
+                  const image = foodItem?.image || "/images/logo.png";
+                  const name = foodItem?.name || itemObj.name || "صنف من كافي عامر";
+                  const price = foodItem?.price || itemObj.price || 0;
+
+                  return (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden relative flex-shrink-0 bg-gray-100 border border-white/60">
+                        <Image
+                          src={image}
+                          alt={name}
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-[#0f2b2d] truncate">
+                          {name}
+                        </h4>
+                        <span className="text-[11px] text-gray-500">
+                          {qty} × {Number(price).toFixed(2)} د.ل
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-[#0f2b2d] truncate">
-                        {item.name}
-                      </h4>
-                      <span className="text-[11px] text-gray-500">
-                        {quantity} × {item.price.toFixed(2)} د.ل
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Delivery Address & Receiver Info */}
@@ -123,22 +146,37 @@ export default function OrdersPage() {
                 </div>
               )}
 
-              {/* Bottom Row: Total & Reorder Button */}
+              {/* Bottom Row: Total & Action Buttons */}
               <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-gray-400 block font-medium">الإجمالي</span>
                   <span className="font-black text-[#187a7d] text-base">
-                    {order.total.toFixed(2)} د.ل
+                    {Number(order.total).toFixed(2)} د.ل
                   </span>
                 </div>
 
-                <button
-                  onClick={() => handleReorder(order.items)}
-                  className="bg-[#e4f2f2] hover:bg-[#d5eded] text-[#187a7d] text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition active:scale-95 border border-[#187a7d]/15 shadow-xs"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-[#187a7d]" />
-                  <span>إعادة الطلب</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (confirm(`هل تريد حذف الطلب ${order.id} من سجلك؟`)) {
+                        deleteOrder(order.id);
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 transition active:scale-95 border border-red-200/60 shadow-xs cursor-pointer"
+                    title="حذف هذا الطلب"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>حذف</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReorder(order.items)}
+                    className="bg-[#e4f2f2] hover:bg-[#d5eded] text-[#187a7d] text-xs font-bold px-3.5 sm:px-4 py-2 rounded-xl flex items-center gap-1.5 transition active:scale-95 border border-[#187a7d]/15 shadow-xs cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-[#187a7d]" />
+                    <span>إعادة الطلب</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))
