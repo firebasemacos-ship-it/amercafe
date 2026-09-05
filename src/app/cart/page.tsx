@@ -68,7 +68,7 @@ export default function CartPage() {
       const itemsListText = cart
         .map(
           (c) =>
-            `• ${c.quantity}× ${c.item.name} (${(c.item.price * c.quantity).toFixed(2)} د.ل)`
+            `• ${c.quantity}× ${c.item.name}${c.notes ? ` (ملاحظة: ${c.notes})` : ""} (${(c.item.price * c.quantity).toFixed(2)} د.ل)`
         )
         .join("\n");
 
@@ -167,9 +167,9 @@ ${itemsListText}
         <div className="p-4 sm:p-6 space-y-4">
           {/* Cart Items List */}
           <div className="space-y-3">
-            {cart.map(({ item, quantity }) => (
+            {cart.map(({ item, quantity, notes }) => (
               <div
-                key={item.id}
+                key={item.id + (notes || "")}
                 className="glass-card rounded-3xl p-3.5 flex items-center gap-3.5"
               >
                 <div className="w-20 h-20 rounded-2xl overflow-hidden relative flex-shrink-0 bg-gray-100 border border-white/60">
@@ -189,16 +189,22 @@ ${itemsListText}
                     </h3>
                     <button
                       onClick={() => removeFromCart(item.id)}
-                      className="text-gray-400 hover:text-red-500 transition p-1"
+                      className="text-gray-400 hover:text-red-500 transition p-1 cursor-pointer"
                       title="حذف"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <span className="text-[11px] text-gray-400 block mb-2">
+                  <span className="text-[11px] text-gray-400 block mb-1">
                     {item.price.toFixed(2)} د.ل للعنصر
                   </span>
+
+                  {notes && (
+                    <span className="text-[10px] text-[#187a7d] bg-[#187a7d]/10 px-2 py-0.5 rounded-md inline-block mb-1.5 font-medium">
+                      📝 {notes}
+                    </span>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <span className="font-black text-[#187a7d] text-base">

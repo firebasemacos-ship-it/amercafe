@@ -1,17 +1,19 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { X, Heart, Star, Clock, Flame, Plus, Minus, ShoppingBag } from "lucide-react";
+import { X, Heart, Star, Clock, Flame, Plus, Minus, ShoppingBag, FileText } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
 export default function FoodDetailsModal() {
   const { selectedFoodModal, setSelectedFoodModal, addToCart, isFavorite, toggleFavorite } = useApp();
   const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     if (selectedFoodModal) {
       setQuantity(1);
+      setNotes("");
     }
   }, [selectedFoodModal]);
 
@@ -21,7 +23,7 @@ export default function FoodDetailsModal() {
   const isFav = isFavorite(item.id);
 
   const handleAdd = () => {
-    addToCart(item, quantity);
+    addToCart(item, quantity, notes.trim() || undefined);
     setSelectedFoodModal(null);
   };
 
@@ -47,13 +49,13 @@ export default function FoodDetailsModal() {
           <div className="absolute top-3 sm:top-4 start-3 sm:start-4 end-3 sm:end-4 flex items-center justify-between z-10">
             <button
               onClick={() => setSelectedFoodModal(null)}
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white text-gray-800 transition active:scale-95 border border-white/60"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white text-gray-800 transition active:scale-95 border border-white/60 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
             <button
               onClick={() => toggleFavorite(item.id)}
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white transition active:scale-95 border border-white/60"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white transition active:scale-95 border border-white/60 cursor-pointer"
             >
               <Heart
                 className={`w-4.5 h-4.5 sm:w-5 sm:h-5 transition-colors ${
@@ -91,30 +93,38 @@ export default function FoodDetailsModal() {
             </div>
           </div>
 
-          {/* Description Glass Card */}
-          {item.description && (
-            <div className="glass-card p-3.5 sm:p-4 rounded-2xl">
-              <h4 className="font-bold text-[#0f2b2d] mb-1 text-xs sm:text-sm">تفاصيل الصنف</h4>
-              <p className="text-gray-600 text-xs leading-relaxed">{item.description}</p>
+          {/* Notes / Special Instructions (Replaces description & ingredients) */}
+          <div className="glass-card p-3 sm:p-3.5 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-[#0f2b2d] text-xs sm:text-sm flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#187a7d]" />
+                <span>ملاحظات خاصة على الطلب</span>
+              </h4>
+              <span className="text-[10px] text-gray-400 font-medium">اختياري</span>
             </div>
-          )}
-
-          {/* Ingredients Tags */}
-          {item.ingredients && item.ingredients.length > 0 && (
-            <div>
-              <h4 className="font-bold text-[#0f2b2d] mb-1.5 text-xs">المكونات:</h4>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {item.ingredients.map((ing, idx) => (
-                  <span
-                    key={idx}
-                    className="glass-pill text-[#0f2b2d] text-[11px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-medium"
-                  >
-                    {ing}
-                  </span>
-                ))}
-              </div>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="مثال: سكر خفيف، زيادة ثلج، بدون إضافات..."
+              className="w-full bg-white/80 border border-gray-200/80 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#187a7d]/30 transition font-medium"
+            />
+            {/* Quick Chips */}
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {["سكر زيادة", "بدون سكر", "حليب ساخن", "ثلج زيادة", "سفري"].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() =>
+                    setNotes((prev) => (prev ? (prev.includes(tag) ? prev : `${prev}، ${tag}`) : tag))
+                  }
+                  className="glass-pill text-[10px] text-gray-600 px-2 py-0.5 rounded-lg hover:text-[#187a7d] active:scale-95 transition cursor-pointer"
+                >
+                  + {tag}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Quantity and Price */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-200/60">
@@ -129,14 +139,14 @@ export default function FoodDetailsModal() {
             <div className="flex items-center gap-2.5 sm:gap-3 glass-card px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-sm">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm active:scale-95 border border-gray-100"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm active:scale-95 border border-gray-100 cursor-pointer"
               >
                 <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <span className="font-black text-[#0f2b2d] w-4 text-center text-xs sm:text-sm">{quantity}</span>
               <button
                 onClick={() => setQuantity((q) => q + 1)}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#187a7d] text-white flex items-center justify-center shadow-sm active:scale-95"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#187a7d] text-white flex items-center justify-center shadow-sm active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
@@ -148,7 +158,7 @@ export default function FoodDetailsModal() {
         <div className="p-3.5 sm:p-4 bg-white/80 backdrop-blur-md border-t border-white/60 flex gap-3 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
           <button
             onClick={handleAdd}
-            className="flex-1 bg-[#187a7d] hover:bg-[#136265] text-white py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#187a7d]/30 active:scale-[0.98] transition text-xs sm:text-sm"
+            className="flex-1 bg-[#187a7d] hover:bg-[#136265] text-white py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#187a7d]/30 active:scale-[0.98] transition text-xs sm:text-sm cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-[#f7d6b5]" />
             <span>إضافة إلى سلة كافي عامر • {(item.price * quantity).toFixed(2)} د.ل</span>

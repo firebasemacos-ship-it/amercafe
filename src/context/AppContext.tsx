@@ -6,6 +6,7 @@ import { FoodItem, FOOD_ITEMS, Order, INITIAL_ORDERS } from "@/data/foods";
 export interface CartItem {
   item: FoodItem;
   quantity: number;
+  notes?: string;
 }
 
 interface AppContextType {
@@ -15,7 +16,7 @@ interface AppContextType {
   discount: number;
   appliedCoupon: string | null;
   finalTotal: number;
-  addToCart: (item: FoodItem, quantity?: number) => void;
+  addToCart: (item: FoodItem, quantity?: number, notes?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, delta: number) => void;
   clearCart: () => void;
@@ -113,15 +114,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }, 2500);
   };
 
-  const addToCart = (item: FoodItem, quantity = 1) => {
+  const addToCart = (item: FoodItem, quantity = 1, notes?: string) => {
     setCart((prev) => {
-      const existing = prev.find((c) => c.item.id === item.id);
+      const existing = prev.find((c) => c.item.id === item.id && c.notes === notes);
       if (existing) {
         return prev.map((c) =>
-          c.item.id === item.id ? { ...c, quantity: c.quantity + quantity } : c
+          c.item.id === item.id && c.notes === notes ? { ...c, quantity: c.quantity + quantity } : c
         );
       }
-      return [...prev, { item, quantity }];
+      return [...prev, { item, quantity, notes }];
     });
     showToast(`تمت إضافة "${item.name}" إلى السلة 🛒`);
   };
